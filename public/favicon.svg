@@ -1,39 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
-  <defs>
-    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0F172A"/>
-      <stop offset="100%" stop-color="#1E293B"/>
-    </linearGradient>
-    <linearGradient id="primary-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2563EB"/>
-      <stop offset="100%" stop-color="#1D4ED8"/>
-    </linearGradient>
-    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#F59E0B"/>
-      <stop offset="100%" stop-color="#D97706"/>
-    </linearGradient>
-  </defs>
-  <!-- Background Card -->
-  <rect x="32" y="32" width="448" height="448" rx="96" fill="url(#bg-grad)"/>
-  <rect x="32" y="32" width="448" height="448" rx="96" fill="none" stroke="#334155" stroke-width="12"/>
-  
-  <!-- Base Stand -->
-  <path d="M 128 392 L 384 392 L 352 360 L 160 360 Z" fill="url(#primary-grad)"/>
-  
-  <!-- Vertical Pillar -->
-  <rect x="236" y="180" width="40" height="180" rx="6" fill="url(#primary-grad)"/>
-  
-  <!-- Balance Beam -->
-  <path d="M 112 180 Q 256 160 400 180" fill="none" stroke="url(#gold-grad)" stroke-width="20" stroke-linecap="round"/>
-  <circle cx="256" cy="172" r="18" fill="url(#gold-grad)"/>
-  
-  <!-- Left Pan Strings & Pan -->
-  <line x1="128" y1="184" x2="100" y2="270" stroke="#94A3B8" stroke-width="6"/>
-  <line x1="128" y1="184" x2="156" y2="270" stroke="#94A3B8" stroke-width="6"/>
-  <path d="M 80 270 Q 128 296 176 270 Z" fill="url(#gold-grad)"/>
-  
-  <!-- Right Pan Strings & Pan -->
-  <line x1="384" y1="184" x2="356" y2="270" stroke="#94A3B8" stroke-width="6"/>
-  <line x1="384" y1="184" x2="412" y2="270" stroke="#94A3B8" stroke-width="6"/>
-  <path d="M 336 270 Q 384 296 432 270 Z" fill="url(#gold-grad)"/>
+  <!-- Blue Square Background -->
+  <rect width="512" height="512" fill="#1B63B6" rx="32"/>
+
+  <!-- White Balance Scale Icon -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Center Vertical Stand & Base -->
+    <line x1="256" y1="120" x2="256" y2="400" />
+    <line x1="170" y1="400" x2="342" y2="400" />
+
+    <!-- Top Curved Beam -->
+    <path d="M 120 180 Q 256 140 392 180" />
+
+    <!-- Left Pan Triangles & Strings -->
+    <line x1="120" y1="180" x2="80" y2="280" />
+    <line x1="120" y1="180" x2="160" y2="280" />
+    <polygon points="80,280 160,280 120,340" fill="none" stroke="#FFFFFF" stroke-width="24" />
+
+    <!-- Right Pan Triangles & Strings -->
+    <line x1="392" y1="180" x2="352" y2="280" />
+    <line x1="392" y1="180" x2="432" y2="280" />
+    <polygon points="352,280 432,280 392,340" fill="none" stroke="#FFFFFF" stroke-width="24" />
+  </g>
 </svg>

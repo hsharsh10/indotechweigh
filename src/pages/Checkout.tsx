@@ -44,7 +44,7 @@ const INDIAN_STATES = [
 ];
 
 const UPI_ID = "indotech@upi";
-const COD_LIMIT = 50000;
+const COD_LIMIT = 10000;
 
 const steps = [
   { id: 1, label: "Details", icon: User },

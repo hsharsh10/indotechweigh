@@ -31,36 +31,7 @@ Supabase	Backend (Database + Storage + Auth)
 React Router	Client-side routing
 Lucide React	Icon library
 Sonner	Toast notifications
-📁 Project Structure
 
-
-src/
-├── assets/            # Product images & static assets
-├── components/
-│   ├── admin/         # AdminLayout, ProductFormModal
-│   ├── cart/          # CartDrawer, CartContext
-│   ├── layout/        # Header, Footer, Layout
-│   └── ui/            # shadcn/ui components
-├── context/
-│   ├── CartContext.tsx # Shopping cart state
-│   └── OrderContext.tsx# Order management (Supabase)
-├── data/
-│   ├── products.ts    # Product fetching from Supabase
-│   └── parts.ts       # Parts fetching from Supabase
-├── lib/
-│   └── supabase.ts    # Supabase client config
-├── pages/
-│   ├── admin/         # AdminLogin, AdminDashboard, AdminOrders, AdminProducts
-│   ├── Index.tsx      # Home page
-│   ├── Products.tsx   # Products listing
-│   ├── ProductDetail.tsx
-│   ├── Parts.tsx      # Parts & components
-│   ├── About.tsx
-│   ├── Contact.tsx
-│   ├── Checkout.tsx
-│   ├── MyOrders.tsx
-│   └── OrderConfirmation.tsx
-└── App.tsx            # Routes & providers
 🚀 Getting Started
 Prerequisites
 Node.js 18+

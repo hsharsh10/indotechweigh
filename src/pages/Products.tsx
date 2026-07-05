@@ -53,21 +53,16 @@ export default function Products() {
   const handleAddToCart = (product: Product) => {
     if (!product.price) return;
     setAddingId(product.id);
-    const baseVariant = product.variants[0];
     addToCart({
       productId: product.id,
       name: product.name,
-      price: baseVariant ? baseVariant.price : product.price,
-      originalPrice: baseVariant ? baseVariant.originalPrice : (product.originalPrice ?? product.price),
+      price: product.price,
+      originalPrice: product.originalPrice ?? product.price,
       quantity: 1,
-      variant: baseVariant ? baseVariant.label : undefined,
-      variantId: baseVariant ? baseVariant.id : undefined,
       image: product.image,
       type: "product",
     });
-    toast.success(`${product.name} added to cart!`, {
-      description: baseVariant ? `Variant: ${baseVariant.label}` : "Select variant on product page for other sizes",
-    });
+    toast.success(`${product.name} added to cart!`);
     setTimeout(() => setAddingId(null), 800);
   };
 
@@ -99,7 +94,7 @@ export default function Products() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {products.map((product) => {
               const imgSrc = product.image?.startsWith("http") ? product.image : getProductImage(product.id);
-              const alreadyInCart = product.price ? isInCart(product.id, product.variants[0]?.id) : false;
+              const alreadyInCart = product.price ? isInCart(product.id) : false;
 
               return (
                 <Card
@@ -143,21 +138,16 @@ export default function Products() {
                       {product.price ? (
                         <div className="flex items-baseline gap-2">
                           <span className="text-xl font-bold text-primary">
-                            {formatPrice(product.variants[0]?.price ?? product.price)}
+                            {formatPrice(product.price)}
                           </span>
                           {product.originalPrice && (
                             <span className="text-sm text-muted-foreground line-through">
-                              {formatPrice(product.variants[0]?.originalPrice ?? product.originalPrice)}
+                              {formatPrice(product.originalPrice)}
                             </span>
                           )}
                         </div>
                       ) : (
                         <span className="text-sm font-medium text-muted-foreground italic">Price on Request</span>
-                      )}
-                      {product.variants.length > 0 && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Starting from · {product.variants.length} variants available
-                        </p>
                       )}
                     </div>
 

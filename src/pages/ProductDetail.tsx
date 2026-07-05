@@ -105,10 +105,10 @@ export default function ProductDetail() {
     return <Navigate to="/products" replace />;
   }
 
-  const currentPrice = selectedVariant ? selectedVariant.price : product.price;
-  const currentOriginalPrice = selectedVariant ? selectedVariant.originalPrice : product.originalPrice;
+  const currentPrice = product.price;
+  const currentOriginalPrice = product.originalPrice;
   const imgSrc = getProductImage(product);
-  const alreadyInCart = currentPrice ? isInCart(product.id, selectedVariant?.id) : false;
+  const alreadyInCart = currentPrice ? isInCart(product.id) : false;
 
   const handleAddToCart = () => {
     if (!currentPrice) return;
@@ -119,13 +119,11 @@ export default function ProductDetail() {
       price: currentPrice,
       originalPrice: currentOriginalPrice ?? currentPrice,
       quantity,
-      variant: selectedVariant?.label,
-      variantId: selectedVariant?.id,
       image: imgSrc || "/placeholder.svg",
       type: "product",
     });
     toast.success(`${product.name} added to cart!`, {
-      description: selectedVariant ? `Variant: ${selectedVariant.label} × ${quantity}` : `Quantity: ${quantity}`,
+      description: `Quantity: ${quantity}`,
     });
     setTimeout(() => setAdding(false), 800);
   };
@@ -201,31 +199,6 @@ export default function ProductDetail() {
               <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
                 {product.description}
               </p>
-
-              {/* Variants Selector */}
-              {product.variants && product.variants.length > 0 && (
-                <div className="mb-6 space-y-2">
-                  <label className="text-sm font-medium text-foreground">Select Variant / Size:</label>
-                  <Select
-                    value={selectedVariant?.id || ""}
-                    onValueChange={(val) => {
-                      const v = product.variants.find((item) => item.id === val);
-                      if (v) setSelectedVariant(v);
-                    }}
-                  >
-                    <SelectTrigger className="w-full max-w-xs">
-                      <SelectValue placeholder="Select variant" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {product.variants.map((v) => (
-                        <SelectItem key={v.id} value={v.id}>
-                          {v.label} — {formatPrice(v.price)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
 
               {/* Specifications Pills */}
               <div className="flex flex-wrap gap-4 mb-8">

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-const ADMIN_PASSWORD = "admin123";
+const ADMIN_PASSWORD = "indotech5076@admin";
 
 export default function AdminLogin() {
   const navigate = useNavigate();

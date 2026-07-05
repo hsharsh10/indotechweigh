@@ -1,46 +1,74 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { 
+import {
   ChevronRight,
-  ChevronDown,
   CheckCircle2,
   Phone,
   Cpu,
   Battery,
   Cable,
   CircleDot,
-  Settings
+  Settings,
+  ShoppingCart,
+  Tag,
 } from "lucide-react";
-import { parts } from "@/data/parts";
+import { formatPrice } from "@/data/products";
+import { fetchParts, type Part } from "@/data/parts";
+import { useCart } from "@/context/CartContext";
+import { toast } from "sonner";
 import loadCellImage from "@/assets/load-cell.jpg";
 import indicatorImage from "@/assets/weighing-indicator.jpg";
 import batteryImage from "@/assets/battery.jpg";
 import cableImage from "@/assets/cable-5amp.jpg";
 
-const partIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  "load-cells": CircleDot,
-  "weighing-indicators": Cpu,
-  "batteries": Battery,
-  "cable-5amp": Cable
-};
-
 const partImages: Record<string, string> = {
   "load-cells": loadCellImage,
   "weighing-indicators": indicatorImage,
   "batteries": batteryImage,
-  "cable-5amp": cableImage
+  "cable-5amp": cableImage,
 };
 
-export default function Parts() {
-  const [expandedPart, setExpandedPart] = useState<string | null>(null);
+function getPartImage(part: Part) {
+  if (part.image?.startsWith("http")) return part.image;
+  return partImages[part.id] || null;
+}
 
-  const togglePart = (id: string) => {
-    setExpandedPart(expandedPart === id ? null : id);
+function StockBadge({ status }: { status: string }) {
+  if (status === "in_stock") return <Badge className="bg-green-100 text-green-700 border-green-200 hover:bg-green-100">In Stock</Badge>;
+  if (status === "made_to_order") return <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100">Made to Order</Badge>;
+  return <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100">Out of Stock</Badge>;
+}
+
+export default function Parts() {
+  const { addToCart, isInCart } = useCart();
+  const [addingId, setAddingId] = useState<string | null>(null);
+  const [parts, setParts] = useState<Part[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchParts().then(data => {
+      setParts(data);
+      setLoading(false);
+    });
+  }, []);
+
+  const handleAddToCart = (part: Part) => {
+    setAddingId(part.id);
+    addToCart({
+      productId: part.id,
+      name: part.name,
+      price: part.price,
+      originalPrice: part.originalPrice,
+      quantity: 1,
+      image: getPartImage(part) || "/placeholder.svg",
+      type: "part",
+    });
+    toast.success(`${part.name} added to cart!`);
+    setTimeout(() => setAddingId(null), 800);
   };
 
   return (
@@ -53,133 +81,91 @@ export default function Parts() {
               Parts & Components
             </h1>
             <p className="text-xl text-secondary-foreground/90">
-              Genuine spare parts and components for all types of electronic weighing systems. 
+              Genuine spare parts and components for all types of electronic weighing systems.
               Keep your equipment running at peak performance.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Parts Overview */}
-      <section className="py-16 lg:py-24">
+      {/* Parts Grid */}
+      <section className="py-16 lg:py-24 min-h-[50vh]">
         <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-5 gap-4 mb-12">
-            {parts.map((part) => {
-              const Icon = partIcons[part.id] || Settings;
-              return (
-                <button
-                  key={part.id}
-                  onClick={() => {
-                    setExpandedPart(part.id);
-                    document.getElementById(part.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }}
-                  className="flex flex-col items-center p-6 rounded-lg bg-card border border-border hover:border-primary/30 hover:shadow-md transition-all text-center"
-                >
-                  <Icon className="h-8 w-8 text-primary mb-3" />
-                  <span className="text-sm font-medium text-foreground">{part.name}</span>
-                </button>
-              );
-            })}
-          </div>
+          {loading ? (
+            <div className="flex justify-center items-center h-48">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {parts.map((part) => {
+                const imgSrc = getPartImage(part);
+                const alreadyInCart = isInCart(part.id);
 
-          {/* Parts Details */}
-          <div className="space-y-8">
-            {parts.map((part) => {
-              const Icon = partIcons[part.id] || Settings;
-              const isExpanded = expandedPart === part.id;
-              const hasImage = partImages[part.id];
-
-              return (
-                <Card key={part.id} id={part.id} className="overflow-hidden">
-                  <CardHeader 
-                    className="cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => togglePart(part.id)}
+                return (
+                  <Card
+                    key={part.id}
+                    className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-border hover:border-primary/30 hover:-translate-y-1"
                   >
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Icon className="h-5 w-5 text-primary" />
+                    {/* Image + Discount badge */}
+                    <div className="relative aspect-[4/3] bg-muted flex items-center justify-center overflow-hidden">
+                      {part.discount > 0 && (
+                        <div className="absolute top-3 left-3 z-10">
+                          <Badge className={`text-xs font-bold px-2 py-1 ${part.discount >= 20 ? "bg-red-500 text-white animate-pulse" : "bg-primary text-primary-foreground"}`}>
+                            <Tag className="h-3 w-3 mr-1" />
+                            {part.discount}% OFF
+                          </Badge>
                         </div>
-                        {part.name}
-                      </CardTitle>
-                      <ChevronDown 
-                        className={`h-5 w-5 text-muted-foreground transition-transform ${
-                          isExpanded ? 'rotate-180' : ''
-                        }`}
-                      />
+                      )}
+                      {imgSrc ? (
+                        <img src={imgSrc} alt={part.name} className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500" />
+                      ) : (
+                        <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <Settings className="h-12 w-12 text-primary" />
+                        </div>
+                      )}
                     </div>
-                    <p className="text-muted-foreground mt-2 pl-13">{part.description}</p>
-                  </CardHeader>
 
-                  {isExpanded && (
-                    <CardContent className="border-t border-border pt-6">
-                      <div className="grid lg:grid-cols-3 gap-8">
-                        {/* Types & Image */}
-                        <div>
-                          {hasImage && (
-                            <div className="aspect-square rounded-lg overflow-hidden mb-6 bg-muted">
-                              <img 
-                                src={partImages[part.id]} 
-                                alt={part.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
+                    <CardContent className="p-6">
+                      {/* Stock + name */}
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h3 className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+                          {part.name}
+                        </h3>
+                        <StockBadge status={part.stockStatus} />
+                      </div>
+
+                      {/* Price */}
+                      <div className="mb-4">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-xl font-bold text-primary">
+                            {formatPrice(part.price)}
+                          </span>
+                          {part.originalPrice > part.price && (
+                            <span className="text-sm text-muted-foreground line-through">
+                              {formatPrice(part.originalPrice)}
+                            </span>
                           )}
                         </div>
+                      </div>
 
-                        {/* Specifications */}
-                        <div>
-                          <h4 className="font-semibold text-foreground mb-3">Key Specifications</h4>
-                          <dl className="space-y-3">
-                            {Object.entries(part.specifications).map(([key, value]) => (
-                              <div key={key} className="border-b border-border pb-2 last:border-0">
-                                <dt className="text-sm font-medium text-foreground">{key}</dt>
-                                <dd className="text-sm text-muted-foreground">{value}</dd>
-                              </div>
-                            ))}
-                          </dl>
-                        </div>
-
-                        {/* Applications & Importance */}
-                        <div className="space-y-6">
-                          <div>
-                            <h4 className="font-semibold text-foreground mb-3">Applications</h4>
-                            <div className="flex flex-wrap gap-2">
-                              {part.applications.map((app, index) => (
-                                <Badge key={index} variant="outline" className="py-1">
-                                  {app}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className="bg-primary/5 rounded-lg p-4 border border-primary/20">
-                            <h4 className="font-semibold text-foreground mb-2">
-                              Role in Weighing Systems
-                            </h4>
-                            <p className="text-sm text-muted-foreground">{part.importance}</p>
-                          </div>
-
-                          <div>
-                            <h4 className="text-sm font-medium text-foreground mb-2">
-                              Compatible With
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                              {part.compatibleProducts.map((product, index) => (
-                                <Badge key={index} variant="secondary" className="py-1">
-                                  {product}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
+                      {/* Actions */}
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          className="flex-1 transition-all duration-200"
+                          onClick={() => handleAddToCart(part)}
+                          disabled={addingId === part.id}
+                        >
+                          <ShoppingCart className={`h-4 w-4 mr-1.5 ${addingId === part.id ? "animate-bounce" : ""}`} />
+                          {addingId === part.id ? "Added!" : alreadyInCart ? "In Cart" : "Add to Cart"}
+                        </Button>
                       </div>
                     </CardContent>
-                  )}
-                </Card>
-              );
-            })}
-          </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -191,7 +177,7 @@ export default function Parts() {
               Why Choose Genuine Parts?
             </h2>
             <p className="text-muted-foreground">
-              Using authentic spare parts ensures optimal performance, accuracy, and longevity 
+              Using authentic spare parts ensures optimal performance, accuracy, and longevity
               of your weighing systems.
             </p>
           </div>
@@ -213,17 +199,15 @@ export default function Parts() {
       </section>
 
       {/* Contact CTA */}
-      <section className="py-12 bg-secondary">
+      <section className="py-16 bg-card border-t border-border">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <h3 className="text-2xl font-bold text-secondary-foreground mb-2">
-                Need Spare Parts?
-              </h3>
-              <p className="text-secondary-foreground/80">
-                Contact us with your requirements for quick quotation and delivery.
-              </p>
-            </div>
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+              Need Spare Parts?
+            </h2>
+            <p className="text-muted-foreground mb-6">
+              Contact us with your requirements for quick quotation and delivery.
+            </p>
             <Button size="lg" asChild>
               <Link to="/contact">
                 <Phone className="mr-2 h-5 w-5" />

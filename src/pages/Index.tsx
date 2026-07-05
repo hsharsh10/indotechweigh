@@ -239,7 +239,7 @@ export default function Index() {
             "Free Installation Support",
             "1-Year Warranty",
             "AMC Available",
-            "Pan-India Service"].
+            "Delhi NCR Service"].
             map((feature) =>
             <div key={feature} className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />

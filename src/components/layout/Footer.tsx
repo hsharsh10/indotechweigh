@@ -6,8 +6,10 @@ const quickLinks = [
   { name: "About Us", href: "/about" },
   { name: "Products", href: "/products" },
   { name: "Parts & Components", href: "/parts" },
+  { name: "My Orders", href: "/my-orders" },
   { name: "Contact Us", href: "/contact" },
 ];
+
 
 const products = [
   { name: "Electronic Weighbridge", href: "/products/electronic-weighbridge" },

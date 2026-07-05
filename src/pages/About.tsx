@@ -236,7 +236,7 @@ export default function About() {
             <div className="flex flex-wrap justify-center gap-6">
               {[
                 "24/7 Technical Support",
-                "Pan-India Service Network",
+                "Delhi NCR Service Network",
                 "Genuine Spare Parts",
                 "Expert Consultation"
               ].map((item) => (

@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   MessageCircle
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function Contact() {
   const { toast } = useToast();
@@ -32,24 +33,17 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeEvcT-x7UIY1VxsuDiQoQVEO9nKxiM8TrozEgy3l4ppdQNEQ/formResponse";
-
-    const formBody = new URLSearchParams({
-      "entry.2005620554": formData.name.trim(),
-      "entry.2041622693": formData.company.trim(),
-      "entry.1045781291": formData.email.trim(),
-      "entry.1065046570": formData.address.trim(),
-      "entry.1166974658": formData.phone.trim(),
-      "entry.839337160": formData.message.trim(),
-    });
-
     try {
-      await fetch(GOOGLE_FORM_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formBody.toString(),
-      });
+      const { error } = await supabase.from('contact_messages').insert([{
+        name: formData.name.trim(),
+        company: formData.company.trim(),
+        email: formData.email.trim(),
+        address: formData.address.trim(),
+        phone: formData.phone.trim(),
+        message: formData.message.trim()
+      }]);
+
+      if (error) throw error;
 
       toast({
         title: "Message Sent!",

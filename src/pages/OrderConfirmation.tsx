@@ -1,0 +1,242 @@
+import { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { Layout } from "@/components/layout/Layout";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  CheckCircle2,
+  Package,
+  MapPin,
+  Phone,
+  Mail,
+  ShoppingBag,
+  Clock,
+  Copy,
+} from "lucide-react";
+import { useOrders } from "@/context/OrderContext";
+import { formatPrice } from "@/data/products";
+import { toast } from "sonner";
+
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  bank_transfer: "Bank Transfer (NEFT/RTGS/IMPS)",
+  upi: "UPI Payment",
+  cod: "Pay on Delivery",
+};
+
+export default function OrderConfirmation() {
+  const { orderId } = useParams<{ orderId: string }>();
+  const { getOrderById } = useOrders();
+  const [order, setOrder] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadOrder() {
+      if (!orderId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const fetchedOrder = await getOrderById(orderId);
+        setOrder(fetchedOrder);
+      } catch (error) {
+        console.error("Error fetching order:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadOrder();
+  }, [orderId, getOrderById]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-24 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading order details...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!order) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-24 text-center">
+          <p className="text-lg text-muted-foreground">Order not found.</p>
+          <Button asChild className="mt-4"><Link to="/products">Continue Shopping</Link></Button>
+        </div>
+      </Layout>
+    );
+  }
+
+  const isCOD = order.payment.method === "cod";
+  const isPending = order.status === "pending_verification";
+
+  const copyOrderId = () => {
+    navigator.clipboard.writeText(order.orderId).then(() => toast.success("Order ID copied!"));
+  };
+
+  return (
+    <Layout>
+      <div className="container mx-auto px-4 py-12 max-w-3xl">
+
+        {/* Success Animation */}
+        <div className="text-center mb-10">
+          <div className="relative inline-flex">
+            <div className="h-24 w-24 rounded-full bg-green-100 flex items-center justify-center animate-checkmark animate-pulse-ring">
+              <CheckCircle2 className="h-14 w-14 text-green-600" />
+            </div>
+          </div>
+          <h1 className="text-3xl font-bold text-foreground mt-6 mb-2">Order Placed Successfully!</h1>
+          <p className="text-muted-foreground text-lg">
+            {isCOD
+              ? "Your order is confirmed. We'll contact you to arrange delivery."
+              : "We've received your order. Please wait for payment verification."}
+          </p>
+
+          {/* Order ID */}
+          <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-muted rounded-lg border border-border">
+            <span className="text-sm text-muted-foreground">Order ID:</span>
+            <span className="font-bold text-foreground">{order.orderId}</span>
+            <button onClick={copyOrderId} className="text-muted-foreground hover:text-foreground transition-colors">
+              <Copy className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Status */}
+          <div className="mt-4">
+            {isCOD ? (
+              <Badge className="bg-green-100 text-green-700 border-green-200 text-sm px-4 py-1.5">
+                ✓ Confirmed — Pay on Delivery
+              </Badge>
+            ) : (
+              <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-sm px-4 py-1.5">
+                ⏳ Payment Verification Pending
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        {/* What's Next */}
+        <div className={`rounded-xl p-5 mb-8 border ${isCOD ? "bg-green-50 border-green-200" : "bg-amber-50 border-amber-200"}`}>
+          <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+            <Clock className="h-5 w-5" /> What Happens Next?
+          </h3>
+          {isCOD ? (
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Your order has been confirmed and is being processed.</li>
+              <li>• Our team will call you within 24 hours to confirm delivery details.</li>
+              <li>• Estimated delivery: <strong>5–7 business days</strong>.</li>
+              <li>• Please keep the exact amount ready for payment at delivery.</li>
+            </ul>
+          ) : (
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Our team will verify your payment within <strong>2–4 business hours</strong>.</li>
+              <li>• You'll be able to track the updated status on your <strong>My Orders</strong> page.</li>
+              <li>• Once verified, your order will be processed for shipment.</li>
+              <li>• Estimated delivery: <strong>5–7 business days</strong> after confirmation.</li>
+            </ul>
+          )}
+        </div>
+
+        {/* Order Items */}
+        <div className="bg-card rounded-xl border border-border overflow-hidden mb-6">
+          <div className="p-5 border-b border-border">
+            <h3 className="font-semibold text-foreground flex items-center gap-2">
+              <ShoppingBag className="h-5 w-5 text-primary" /> Order Items
+            </h3>
+          </div>
+          <div className="divide-y divide-border">
+            {order.items.map(item => (
+              <div key={item.id} className="p-4 flex justify-between items-center">
+                <div>
+                  <p className="font-medium text-foreground">{item.name}</p>
+                  {item.variant && <p className="text-sm text-muted-foreground">{item.variant}</p>}
+                  <p className="text-sm text-muted-foreground">× {item.quantity}</p>
+                </div>
+                <p className="font-semibold text-foreground">{formatPrice(item.price * item.quantity)}</p>
+              </div>
+            ))}
+          </div>
+          <div className="p-5 bg-muted/30 border-t border-border space-y-1.5 text-sm">
+            <div className="flex justify-between text-muted-foreground">
+              <span>Subtotal</span><span>{formatPrice(order.subtotal)}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <span>GST (18%)</span><span>{formatPrice(order.gst)}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <span>Shipping</span>
+              <span>{order.shipping === 0 ? "FREE" : formatPrice(order.shipping)}</span>
+            </div>
+            <Separator className="my-2" />
+            <div className="flex justify-between font-bold text-base">
+              <span>Total Paid</span>
+              <span className="text-primary">{formatPrice(order.total)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Customer & Shipping */}
+        <div className="grid sm:grid-cols-2 gap-4 mb-6">
+          <div className="bg-card rounded-xl border border-border p-5">
+            <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Package className="h-4 w-4 text-primary" /> Customer Details
+            </h4>
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p className="font-medium text-foreground">{order.customer.fullName}</p>
+              <p>{order.customer.phone}</p>
+              <p>{order.customer.email}</p>
+              {order.customer.companyName && <p>{order.customer.companyName}</p>}
+              {order.customer.gstNumber && <p>GST: {order.customer.gstNumber}</p>}
+            </div>
+          </div>
+          <div className="bg-card rounded-xl border border-border p-5">
+            <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-primary" /> Shipping Address
+            </h4>
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p>{order.shippingAddress.addressLine1}</p>
+              {order.shippingAddress.addressLine2 && <p>{order.shippingAddress.addressLine2}</p>}
+              <p>{order.shippingAddress.city}, {order.shippingAddress.state} — {order.shippingAddress.pinCode}</p>
+              <Badge variant="outline" className="text-xs capitalize mt-1">{order.shippingAddress.addressType}</Badge>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Method */}
+        <div className="bg-card rounded-xl border border-border p-5 mb-8">
+          <h4 className="font-semibold text-foreground mb-2">Payment Method</h4>
+          <p className="text-sm text-muted-foreground">{PAYMENT_METHOD_LABELS[order.payment.method]}</p>
+          {order.payment.transactionId && (
+            <p className="text-sm text-muted-foreground mt-1">UTR / Transaction ID: <span className="font-medium text-foreground">{order.payment.transactionId}</span></p>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-8">
+          <Button asChild className="flex-1" size="lg">
+            <Link to="/my-orders">Track My Order</Link>
+          </Button>
+          <Button variant="outline" asChild className="flex-1" size="lg">
+            <Link to="/products">Continue Shopping</Link>
+          </Button>
+        </div>
+
+        {/* Contact */}
+        <div className="text-center text-sm text-muted-foreground border-t border-border pt-6">
+          <p className="mb-2 font-medium text-foreground">Questions about your order?</p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="tel:+919811262055" className="flex items-center gap-1.5 hover:text-primary transition-colors">
+              <Phone className="h-4 w-4" /> +91 98112 62055
+            </a>
+            <a href="mailto:indotechweigh@gmail.com" className="flex items-center gap-1.5 hover:text-primary transition-colors">
+              <Mail className="h-4 w-4" /> indotechweigh@gmail.com
+            </a>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+}

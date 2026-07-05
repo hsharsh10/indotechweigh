@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import {
   Target,
   Package
 } from "lucide-react";
-import { getProductById, products } from "@/data/products";
+import { fetchProductById, fetchProducts, type Product } from "@/data/products";
 import tableTopScale from "@/assets/table-top-scale.png";
 import platformScale from "@/assets/platform-scale.png";
 import industrialScale from "@/assets/industrial-weighing-scale.png";
@@ -26,13 +27,36 @@ import customWeighingSolutions from "@/assets/custom-weighing-solutions.png";
 
 export default function ProductDetail() {
   const { productId } = useParams<{ productId: string }>();
-  const product = productId ? getProductById(productId) : undefined;
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      if (!productId) return;
+      setLoading(true);
+      const prod = await fetchProductById(productId);
+      setProduct(prod || null);
+      const allProducts = await fetchProducts();
+      setRelatedProducts(allProducts.filter(p => p.id !== productId).slice(0, 3));
+      setLoading(false);
+    }
+    loadData();
+  }, [productId]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center h-[60vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!product) {
     return <Navigate to="/products" replace />;
   }
-
-  const relatedProducts = products.filter(p => p.id !== product.id).slice(0, 3);
 
   return (
     <Layout>
@@ -56,7 +80,9 @@ export default function ProductDetail() {
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Product Image */}
             <div className="aspect-square bg-card rounded-2xl border border-border flex items-center justify-center overflow-hidden">
-              {product.id === "table-top-scale" ? (
+              {product.image?.startsWith("http") ? (
+                <img src={product.image} alt={product.name} className="w-full h-full object-contain p-8" />
+              ) : product.id === "table-top-scale" ? (
                 <img src={tableTopScale} alt={product.name} className="w-full h-full object-contain p-8" />
               ) : product.id === "platform-scale" ? (
                 <img src={platformScale} alt={product.name} className="w-full h-full object-contain p-8" />
@@ -199,7 +225,7 @@ export default function ProductDetail() {
               </h3>
               <p className="text-muted-foreground mb-4">
                 Comprehensive Annual Maintenance Contract (AMC) available for all our products. 
-                Our pan-India service network ensures prompt support and minimal downtime.
+                Our Delhi NCR service network ensures prompt support and minimal downtime.
               </p>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-center gap-2">

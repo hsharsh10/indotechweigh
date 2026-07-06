@@ -163,18 +163,29 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
         }
       }
 
-      const { error } = await supabase
+      let { error } = await supabase
         .from(type)
         .upsert(payload);
 
-      if (error) throw error;
+      // Fallback if 'images' column doesn't exist in Supabase table schema yet
+      if (error && (error.message?.includes("images") || error.code === "PGRST204" || error.code === "42703")) {
+        const { images, ...payloadWithoutImages } = payload;
+        const retry = await supabase.from(type).upsert(payloadWithoutImages);
+        error = retry.error;
+      }
+
+      if (error) {
+        console.error("Supabase Save Error:", error);
+        toast.error(`Save Error: ${error.message || "Failed to save product"}`);
+        return;
+      }
       
       toast.success(editingItem ? "Updated successfully!" : "Added successfully!");
       onSaved();
       onClose();
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to save. Check console for details.");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(`Error: ${err?.message || "Failed to save. Check console for details."}`);
     } finally {
       setLoading(false);
     }

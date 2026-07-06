@@ -41,6 +41,8 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
     if (editingItem) {
       const existingImages = 'images' in editingItem && editingItem.images && editingItem.images.length > 0
         ? editingItem.images
+        : ('specifications' in editingItem && editingItem.specifications && Array.isArray(editingItem.specifications._gallery) && editingItem.specifications._gallery.length > 0)
+        ? editingItem.specifications._gallery
         : editingItem.image ? [editingItem.image] : [];
 
       setFormData({
@@ -131,6 +133,9 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
       // Auto-generate ID for new items
       const itemId = editingItem ? editingItem.id : formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
       
+      const existingSpecs = (editingItem && 'specifications' in editingItem && editingItem.specifications) ? editingItem.specifications : {};
+      const updatedSpecs = { ...existingSpecs, _gallery: formData.images };
+
       const payload: any = {
         id: itemId,
         name: formData.name,
@@ -142,6 +147,7 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
         in_stock: formData.stock_status === "in_stock",
         image: formData.images[0] || "",
         images: formData.images,
+        specifications: updatedSpecs,
       };
 
       if (type === "products") {

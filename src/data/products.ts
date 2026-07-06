@@ -43,7 +43,11 @@ export const fetchProducts = async (): Promise<Product[]> => {
     specifications: p.specifications,
     features: p.features,
     image: p.image,
-    images: p.images || (p.image ? [p.image] : []),
+    images: (p.images && p.images.length > 0) 
+      ? p.images 
+      : (p.specifications && Array.isArray(p.specifications._gallery) && p.specifications._gallery.length > 0)
+      ? p.specifications._gallery
+      : (p.image ? [p.image] : []),
     category: p.category,
     price: p.price,
     originalPrice: p.original_price,
@@ -67,7 +71,11 @@ export const fetchProductById = async (id: string): Promise<Product | undefined>
     specifications: data.specifications,
     features: data.features,
     image: data.image,
-    images: data.images || (data.image ? [data.image] : []),
+    images: (data.images && data.images.length > 0) 
+      ? data.images 
+      : (data.specifications && Array.isArray(data.specifications._gallery) && data.specifications._gallery.length > 0)
+      ? data.specifications._gallery
+      : (data.image ? [data.image] : []),
     category: data.category,
     price: data.price,
     originalPrice: data.original_price,

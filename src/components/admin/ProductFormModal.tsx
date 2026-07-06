@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { X, Upload, Trash2, Image as ImageIcon } from "lucide-react";
+import { X, Upload, Trash2, Image as ImageIcon, Plus, Settings, CheckCircle2, Package } from "lucide-react";
 import type { Product } from "@/data/products";
 import type { Part } from "@/data/parts";
 
@@ -37,6 +37,11 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
     images: [] as string[],
   });
 
+  // Dynamic lists for specs, features, applications
+  const [specificationsList, setSpecificationsList] = useState<{ key: string; value: string }[]>([]);
+  const [featuresList, setFeaturesList] = useState<string[]>([]);
+  const [applicationsList, setApplicationsList] = useState<string[]>([]);
+
   useEffect(() => {
     if (editingItem) {
       const existingImages = 'images' in editingItem && editingItem.images && editingItem.images.length > 0
@@ -44,6 +49,25 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
         : ('specifications' in editingItem && editingItem.specifications && Array.isArray(editingItem.specifications._gallery) && editingItem.specifications._gallery.length > 0)
         ? editingItem.specifications._gallery
         : editingItem.image ? [editingItem.image] : [];
+
+      // Extract Specs (excluding internal _gallery)
+      const rawSpecs = editingItem.specifications || {};
+      const specsArr = Object.entries(rawSpecs)
+        .filter(([k]) => k !== "_gallery")
+        .map(([key, value]) => ({ key, value: String(value) }));
+
+      setSpecificationsList(specsArr.length > 0 ? specsArr : [
+        { key: "capacity", value: "" },
+        { key: "accuracy", value: "" }
+      ]);
+
+      // Extract Features
+      const rawFeatures = ('features' in editingItem && Array.isArray(editingItem.features)) ? editingItem.features : [];
+      setFeaturesList(rawFeatures);
+
+      // Extract Applications
+      const rawApplications = ('applications' in editingItem && Array.isArray(editingItem.applications)) ? editingItem.applications : [];
+      setApplicationsList(rawApplications);
 
       setFormData({
         id: editingItem.id,
@@ -72,8 +96,59 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
         stock_status: "in_stock",
         images: [],
       });
+      setSpecificationsList([
+        { key: "capacity", value: "" },
+        { key: "accuracy", value: "" }
+      ]);
+      setFeaturesList([""]);
+      setApplicationsList([""]);
     }
   }, [editingItem, isOpen]);
+
+  // Specifications handlers
+  const handleAddSpecification = () => {
+    setSpecificationsList(prev => [...prev, { key: "", value: "" }]);
+  };
+  const handleUpdateSpecification = (index: number, field: "key" | "value", val: string) => {
+    setSpecificationsList(prev => {
+      const copy = [...prev];
+      copy[index][field] = val;
+      return copy;
+    });
+  };
+  const handleRemoveSpecification = (index: number) => {
+    setSpecificationsList(prev => prev.filter((_, idx) => idx !== index));
+  };
+
+  // Features handlers
+  const handleAddFeature = () => {
+    setFeaturesList(prev => [...prev, ""]);
+  };
+  const handleUpdateFeature = (index: number, val: string) => {
+    setFeaturesList(prev => {
+      const copy = [...prev];
+      copy[index] = val;
+      return copy;
+    });
+  };
+  const handleRemoveFeature = (index: number) => {
+    setFeaturesList(prev => prev.filter((_, idx) => idx !== index));
+  };
+
+  // Applications handlers
+  const handleAddApplication = () => {
+    setApplicationsList(prev => [...prev, ""]);
+  };
+  const handleUpdateApplication = (index: number, val: string) => {
+    setApplicationsList(prev => {
+      const copy = [...prev];
+      copy[index] = val;
+      return copy;
+    });
+  };
+  const handleRemoveApplication = (index: number) => {
+    setApplicationsList(prev => prev.filter((_, idx) => idx !== index));
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -109,7 +184,6 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
       toast.error("Error uploading image(s). Check if product_images bucket exists and is public.");
     } finally {
       setUploading(false);
-      // Reset file input value so same files can be re-selected if needed
       e.target.value = "";
     }
   };
@@ -132,9 +206,15 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
     try {
       // Auto-generate ID for new items
       const itemId = editingItem ? editingItem.id : formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      
-      const existingSpecs = (editingItem && 'specifications' in editingItem && editingItem.specifications) ? editingItem.specifications : {};
-      const updatedSpecs = { ...existingSpecs, _gallery: formData.images };
+
+      // Build specs object
+      const specsObj: Record<string, string> = {};
+      specificationsList.forEach(item => {
+        if (item.key.trim()) {
+          specsObj[item.key.trim()] = item.value.trim();
+        }
+      });
+      specsObj._gallery = formData.images as any;
 
       const payload: any = {
         id: itemId,
@@ -147,24 +227,21 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
         in_stock: formData.stock_status === "in_stock",
         image: formData.images[0] || "",
         images: formData.images,
-        specifications: updatedSpecs,
+        specifications: specsObj,
       };
 
       if (type === "products") {
         payload.short_description = formData.short_description;
         payload.category = formData.category;
+        payload.features = featuresList.filter(f => f.trim().length > 0);
+        payload.applications = applicationsList.filter(a => a.trim().length > 0);
         if (!editingItem) {
-          payload.applications = [];
-          payload.specifications = {};
-          payload.features = [];
           payload.variants = [];
         }
       } else {
         payload.importance = formData.importance;
         if (!editingItem) {
           payload.types = [];
-          payload.specifications = {};
-          payload.applications = [];
           payload.compatible_products = [];
         }
       }
@@ -185,7 +262,7 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
         toast.error(`Save Error: ${error.message || "Failed to save product"}`);
         return;
       }
-      
+
       toast.success(editingItem ? "Updated successfully!" : "Added successfully!");
       onSaved();
       onClose();
@@ -199,7 +276,7 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{editingItem ? 'Edit' : 'Add New'} {type === 'products' ? 'Product' : 'Part'}</DialogTitle>
         </DialogHeader>
@@ -209,7 +286,7 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
             <Label>Name *</Label>
             <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Table Top Scale" />
           </div>
-          
+
           <div className="space-y-2 col-span-2 sm:col-span-1">
             <Label>Price (₹) *</Label>
             <Input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} placeholder="e.g. 5000" />
@@ -253,25 +330,158 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
                     <SelectItem value="Industrial Weighing Scale">Industrial Weighing Scale</SelectItem>
                     <SelectItem value="Crane Scale">Crane Scale</SelectItem>
                     <SelectItem value="Electronic Weighbridge">Electronic Weighbridge</SelectItem>
+                    <SelectItem value="Jewellery Scale">Jewellery Scale</SelectItem>
+                    <SelectItem value="Personal Scale">Personal Scale</SelectItem>
+                    <SelectItem value="Custom Solutions">Custom Solutions</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2 col-span-2">
                 <Label>Short Description</Label>
-                <Input value={formData.short_description} onChange={e => setFormData({...formData, short_description: e.target.value})} />
+                <Input value={formData.short_description} onChange={e => setFormData({...formData, short_description: e.target.value})} placeholder="Brief 1-line overview" />
               </div>
             </>
           )}
 
           <div className="space-y-2 col-span-2">
             <Label>Full Description</Label>
-            <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={3} />
+            <Textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={3} placeholder="Detailed product description..." />
           </div>
 
-          {/* Multiple Product Images Upload & Gallery */}
-          <div className="space-y-3 col-span-2">
+          {/* Technical Specifications Section */}
+          <div className="space-y-3 col-span-2 p-4 bg-slate-50 border border-slate-200 rounded-xl">
             <div className="flex items-center justify-between">
-              <Label className="flex items-center gap-1.5 font-medium">
+              <Label className="flex items-center gap-1.5 font-bold text-slate-800">
+                <Settings className="h-4 w-4 text-primary" />
+                Technical Specifications
+              </Label>
+              <Button type="button" variant="outline" size="sm" onClick={handleAddSpecification} className="h-8 text-xs">
+                <Plus className="h-3.5 w-3.5 mr-1" /> Add Specification
+              </Button>
+            </div>
+
+            {specificationsList.length === 0 ? (
+              <p className="text-xs text-slate-400 italic">No specifications added yet. Click "+ Add Specification" to add capacity, accuracy, pan size, etc.</p>
+            ) : (
+              <div className="space-y-2">
+                {specificationsList.map((spec, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input
+                      placeholder="Property (e.g. capacity, accuracy, display)"
+                      value={spec.key}
+                      onChange={e => handleUpdateSpecification(idx, "key", e.target.value)}
+                      className="flex-1 bg-white text-xs"
+                    />
+                    <Input
+                      placeholder="Value (e.g. 50kg, 5g, LED Red)"
+                      value={spec.value}
+                      onChange={e => handleUpdateSpecification(idx, "value", e.target.value)}
+                      className="flex-1 bg-white text-xs"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveSpecification(idx)}
+                      className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                      title="Remove specification"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Key Features Section (for products) */}
+          {type === "products" && (
+            <div className="space-y-3 col-span-2 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-1.5 font-bold text-slate-800">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  Key Features
+                </Label>
+                <Button type="button" variant="outline" size="sm" onClick={handleAddFeature} className="h-8 text-xs">
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Feature
+                </Button>
+              </div>
+
+              {featuresList.length === 0 ? (
+                <p className="text-xs text-slate-400 italic">No features added yet. Click "+ Add Feature" to add product highlights.</p>
+              ) : (
+                <div className="space-y-2">
+                  {featuresList.map((feat, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <Input
+                        placeholder="Feature highlight (e.g. Overload protection, 40hr Battery backup)"
+                        value={feat}
+                        onChange={e => handleUpdateFeature(idx, e.target.value)}
+                        className="flex-1 bg-white text-xs"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveFeature(idx)}
+                        className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        title="Remove feature"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Applications Section (for products) */}
+          {type === "products" && (
+            <div className="space-y-3 col-span-2 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-1.5 font-bold text-slate-800">
+                  <Package className="h-4 w-4 text-primary" />
+                  Applications
+                </Label>
+                <Button type="button" variant="outline" size="sm" onClick={handleAddApplication} className="h-8 text-xs">
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Application
+                </Button>
+              </div>
+
+              {applicationsList.length === 0 ? (
+                <p className="text-xs text-slate-400 italic">No applications added yet. Click "+ Add Application" to specify industries or usage environments.</p>
+              ) : (
+                <div className="space-y-2">
+                  {applicationsList.map((app, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <Input
+                        placeholder="Application (e.g. Retail & Grocery Stores, Industrial Warehouses)"
+                        value={app}
+                        onChange={e => handleUpdateApplication(idx, e.target.value)}
+                        className="flex-1 bg-white text-xs"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveApplication(idx)}
+                        className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        title="Remove application"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Multiple Product Images Upload & Gallery */}
+          <div className="space-y-3 col-span-2 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-1.5 font-bold text-slate-800">
                 <ImageIcon className="h-4 w-4 text-primary" />
                 Product Images * ({formData.images.length} added)
               </Label>
@@ -280,7 +490,7 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
 
             {/* Thumbnail Grid with Delete Option */}
             {formData.images.length > 0 && (
-              <div className="grid grid-cols-4 gap-3 p-3 bg-muted/40 rounded-xl border border-border">
+              <div className="grid grid-cols-4 gap-3 p-3 bg-white rounded-xl border border-slate-200">
                 {formData.images.map((imgUrl, idx) => (
                   <div key={idx} className="relative group aspect-square bg-card rounded-lg border overflow-hidden flex items-center justify-center p-1">
                     <img src={imgUrl} alt={`Product ${idx + 1}`} className="w-full h-full object-contain" />
@@ -304,7 +514,7 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
             )}
 
             {/* Upload Input for Multiple Files */}
-            <div className="border-2 border-dashed border-border hover:border-primary/50 rounded-xl p-4 text-center transition-colors bg-card">
+            <div className="border-2 border-dashed border-slate-300 hover:border-primary/50 rounded-xl p-4 text-center transition-colors bg-white">
               <input
                 type="file"
                 accept="image/*"

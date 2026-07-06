@@ -340,7 +340,7 @@ export default function ProductDetail() {
             )}
 
             {/* Specifications */}
-            {product.specifications && Object.keys(product.specifications).length > 0 && (
+            {product.specifications && Object.keys(product.specifications).filter(k => k !== "_gallery").length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -350,12 +350,14 @@ export default function ProductDetail() {
                 </CardHeader>
                 <CardContent>
                   <dl className="space-y-3">
-                    {Object.entries(product.specifications).map(([key, value]) => (
-                      <div key={key} className="border-b border-border pb-2 last:border-0">
-                        <dt className="text-sm font-medium text-foreground capitalize">{key}</dt>
-                        <dd className="text-sm text-muted-foreground">{value}</dd>
-                      </div>
-                    ))}
+                    {Object.entries(product.specifications)
+                      .filter(([key]) => key !== "_gallery")
+                      .map(([key, value]) => (
+                        <div key={key} className="border-b border-border pb-2 last:border-0">
+                          <dt className="text-sm font-medium text-foreground capitalize">{key}</dt>
+                          <dd className="text-sm text-muted-foreground">{String(value)}</dd>
+                        </div>
+                      ))}
                   </dl>
                 </CardContent>
               </Card>

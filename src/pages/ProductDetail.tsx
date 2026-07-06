@@ -65,9 +65,9 @@ export default function ProductDetail() {
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
 
   const { addToCart, isInCart } = useCart();
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
 
@@ -78,8 +78,9 @@ export default function ProductDetail() {
       const prod = await fetchProductById(productId);
       if (prod) {
         setProduct(prod);
-        if (prod.variants && prod.variants.length > 0) {
-          setSelectedVariant(prod.variants[0]);
+        const imagesList = prod.images && prod.images.length > 0 ? prod.images : (prod.image ? [prod.image] : []);
+        if (imagesList.length > 0) {
+          setActiveImage(imagesList[0]);
         }
       } else {
         setProduct(null);
@@ -107,7 +108,9 @@ export default function ProductDetail() {
 
   const currentPrice = product.price;
   const currentOriginalPrice = product.originalPrice;
-  const imgSrc = getProductImage(product);
+  const fallbackImgSrc = getProductImage(product);
+  const displayImgSrc = activeImage || fallbackImgSrc;
+  const allImages = product.images && product.images.length > 0 ? product.images : (displayImgSrc ? [displayImgSrc] : []);
   const alreadyInCart = currentPrice ? isInCart(product.id) : false;
 
   const handleAddToCart = () => {
@@ -148,21 +151,40 @@ export default function ProductDetail() {
       <section className="py-12 lg:py-16">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12">
-            {/* Product Image */}
-            <div className="aspect-square bg-card rounded-2xl border border-border flex items-center justify-center overflow-hidden relative">
-              {product.discount > 0 && (
-                <div className="absolute top-4 left-4 z-10">
-                  <Badge className="bg-red-500 text-white text-sm font-bold px-3 py-1">
-                    <Tag className="h-4 w-4 mr-1" />
-                    {product.discount}% OFF
-                  </Badge>
-                </div>
-              )}
-              {imgSrc ? (
-                <img src={imgSrc} alt={product.name} className="w-full h-full object-contain p-8" />
-              ) : (
-                <div className="h-48 w-48 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Scale className="h-24 w-24 text-primary" />
+            {/* Product Image Column */}
+            <div className="space-y-4">
+              <div className="aspect-square bg-card rounded-2xl border border-border flex items-center justify-center overflow-hidden relative">
+                {product.discount > 0 && (
+                  <div className="absolute top-4 left-4 z-10">
+                    <Badge className="bg-red-500 text-white text-sm font-bold px-3 py-1">
+                      <Tag className="h-4 w-4 mr-1" />
+                      {product.discount}% OFF
+                    </Badge>
+                  </div>
+                )}
+                {displayImgSrc ? (
+                  <img src={displayImgSrc} alt={product.name} className="w-full h-full object-contain p-8 transition-all duration-300" />
+                ) : (
+                  <div className="h-48 w-48 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Scale className="h-24 w-24 text-primary" />
+                  </div>
+                )}
+              </div>
+
+              {/* Multiple Images Thumbnail Strip */}
+              {allImages.length > 1 && (
+                <div className="flex items-center gap-3 overflow-x-auto pb-2">
+                  {allImages.map((url, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveImage(url)}
+                      className={`h-16 w-16 rounded-xl border-2 overflow-hidden flex-shrink-0 bg-card p-1 transition-all ${
+                        displayImgSrc === url ? "border-primary ring-2 ring-primary/20 scale-105" : "border-border opacity-70 hover:opacity-100"
+                      }`}
+                    >
+                      <img src={url} alt={`${product.name} ${i + 1}`} className="w-full h-full object-contain" />
+                    </button>
+                  ))}
                 </div>
               )}
             </div>

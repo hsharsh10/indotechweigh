@@ -17,6 +17,7 @@ export interface Product {
   specifications: Record<string, string>;
   features: string[];
   image: string;
+  images?: string[];
   category: string;
   price: number | null;
   originalPrice: number | null;
@@ -42,6 +43,7 @@ export const fetchProducts = async (): Promise<Product[]> => {
     specifications: p.specifications,
     features: p.features,
     image: p.image,
+    images: p.images || (p.image ? [p.image] : []),
     category: p.category,
     price: p.price,
     originalPrice: p.original_price,
@@ -65,6 +67,7 @@ export const fetchProductById = async (id: string): Promise<Product | undefined>
     specifications: data.specifications,
     features: data.features,
     image: data.image,
+    images: data.images || (data.image ? [data.image] : []),
     category: data.category,
     price: data.price,
     originalPrice: data.original_price,

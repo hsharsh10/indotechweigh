@@ -46,7 +46,7 @@ function StockBadge({ status }: { status: string }) {
 }
 
 function getProductImage(product: Product) {
-  if (product.image?.startsWith("http")) return product.image;
+  if (product.image?.startsWith("http://") || product.image?.startsWith("https://")) return product.image;
   const map: Record<string, string> = {
     "table-top-scale": tableTopScale,
     "platform-scale": platformScale,
@@ -58,6 +58,13 @@ function getProductImage(product: Product) {
     "custom-weighing-solutions": customWeighingSolutions,
   };
   return map[product.id] || null;
+}
+
+function resolveImageUrl(url: string | null | undefined, product: Product): string | null {
+  if (url && (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:"))) {
+    return url;
+  }
+  return getProductImage(product);
 }
 
 export default function ProductDetail() {
@@ -108,9 +115,12 @@ export default function ProductDetail() {
 
   const currentPrice = product.price;
   const currentOriginalPrice = product.originalPrice;
-  const fallbackImgSrc = getProductImage(product);
-  const displayImgSrc = activeImage || fallbackImgSrc;
-  const allImages = product.images && product.images.length > 0 ? product.images : (displayImgSrc ? [displayImgSrc] : []);
+  const displayImgSrc = resolveImageUrl(activeImage, product);
+  
+  const rawImages = product.images && product.images.length > 0 ? product.images : (product.image ? [product.image] : []);
+  const allImages = rawImages.map(img => resolveImageUrl(img, product)).filter((img): img is string => Boolean(img));
+  const uniqueImages = [...new Set(allImages)];
+
   const alreadyInCart = currentPrice ? isInCart(product.id) : false;
 
   const handleAddToCart = () => {
@@ -122,7 +132,7 @@ export default function ProductDetail() {
       price: currentPrice,
       originalPrice: currentOriginalPrice ?? currentPrice,
       quantity,
-      image: imgSrc || "/placeholder.svg",
+      image: displayImgSrc || "/placeholder.svg",
       type: "product",
     });
     toast.success(`${product.name} added to cart!`, {

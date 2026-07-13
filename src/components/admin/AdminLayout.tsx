@@ -9,12 +9,14 @@ import {
   Menu,
   X,
   ChevronRight,
+  Mail,
 } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { label: "Orders", href: "/admin/orders", icon: ShoppingCart },
   { label: "Products", href: "/admin/products", icon: Package },
+  { label: "Messages", href: "/admin/messages", icon: Mail },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {

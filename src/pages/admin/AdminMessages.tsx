@@ -54,9 +54,10 @@ export default function AdminMessages() {
 
       if (error) throw error;
       setMessages(data || []);
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      toast.error("Failed to load messages: " + error.message);
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      toast.error("Failed to load messages: " + msg);
     } finally {
       setLoading(false);
     }
@@ -73,9 +74,10 @@ export default function AdminMessages() {
       toast.success("Message deleted successfully");
       setMessages(prev => prev.filter(msg => msg.id !== id));
       if (expandedId === id) setExpandedId(null);
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      toast.error("Failed to delete message: " + error.message);
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      toast.error("Failed to delete message: " + msg);
     }
   };
 

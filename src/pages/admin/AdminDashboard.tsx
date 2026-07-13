@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { useOrders, type OrderStatus } from "@/context/OrderContext";
+import { useOrders, type OrderStatus, type Order } from "@/context/OrderContext";
 import { formatPrice } from "@/data/products";
 import {
   ShoppingCart,
@@ -37,7 +37,7 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { fetchAllOrders } = useOrders();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -14,7 +14,7 @@ import {
   Clock,
   Copy,
 } from "lucide-react";
-import { useOrders } from "@/context/OrderContext";
+import { useOrders, type Order } from "@/context/OrderContext";
 import { formatPrice } from "@/data/products";
 import { toast } from "sonner";
 
@@ -27,7 +27,7 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 export default function OrderConfirmation() {
   const { orderId } = useParams<{ orderId: string }>();
   const { getOrderById } = useOrders();
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -72,6 +72,7 @@ function generateOrderId(): string {
   return `ITW-${date}-${random}`;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapDbToOrder(dbRow: any): Order {
   return {
     orderId: dbRow.order_id,
@@ -120,7 +121,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
   };
 
   const updateOrderStatus = async (orderId: string, status: OrderStatus, adminNotes?: string) => {
-    const updateData: any = { status };
+    const updateData: Record<string, string | OrderStatus> = { status };
     if (adminNotes !== undefined) {
       updateData.admin_notes = adminNotes;
     }

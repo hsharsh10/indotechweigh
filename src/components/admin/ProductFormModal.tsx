@@ -214,9 +214,9 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
           specsObj[item.key.trim()] = item.value.trim();
         }
       });
-      specsObj._gallery = formData.images as any;
+      specsObj._gallery = formData.images as unknown as string;
 
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         id: itemId,
         name: formData.name,
         description: formData.description,
@@ -266,9 +266,10 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
       toast.success(editingItem ? "Updated successfully!" : "Added successfully!");
       onSaved();
       onClose();
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      toast.error(`Error: ${err?.message || "Failed to save. Check console for details."}`);
+      const msg = err instanceof Error ? err.message : "Failed to save";
+      toast.error(`Error: ${msg}. Check console for details.`);
     } finally {
       setLoading(false);
     }

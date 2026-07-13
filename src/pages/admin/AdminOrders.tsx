@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { useOrders, type OrderStatus } from "@/context/OrderContext";
+import { useOrders, type OrderStatus, type Order } from "@/context/OrderContext";
 import { formatPrice } from "@/data/products";
 import {
   ChevronDown,
@@ -52,18 +52,10 @@ export default function AdminOrders() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [adminNoteInputs, setAdminNoteInputs] = useState<Record<string, string>>({});
   
-  const [allOrders, setAllOrders] = useState<any[]>([]);
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (sessionStorage.getItem("indotech_admin") !== "true") {
-      navigate("/admin");
-      return;
-    }
-    loadOrders();
-  }, [navigate]);
-
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     try {
       const data = await fetchAllOrders();
       setAllOrders(data);
@@ -73,7 +65,15 @@ export default function AdminOrders() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchAllOrders]);
+
+  useEffect(() => {
+    if (sessionStorage.getItem("indotech_admin") !== "true") {
+      navigate("/admin");
+      return;
+    }
+    loadOrders();
+  }, [navigate, loadOrders]);
 
   const handleStatusUpdate = async (orderId: string, newStatus: OrderStatus, label: string) => {
     if (!window.confirm(`Are you sure you want to mark this order as "${label}"?`)) return;

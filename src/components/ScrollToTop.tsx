@@ -5,11 +5,7 @@ export function ScrollToTop() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: "instant", // Reset scroll position immediately on page change
-    });
+    window.scrollTo(0, 0); // Safest way to scroll to top instantly without any browser compatibility issues
   }, [pathname]);
 
   return null;

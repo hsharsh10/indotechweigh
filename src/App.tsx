@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 // Contexts
 import { CartProvider } from "@/context/CartContext";
@@ -37,6 +38,7 @@ const App = () => (
           <Toaster />
           <Sonner richColors />
           <BrowserRouter>
+            <ScrollToTop />
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<Index />} />

@@ -16,6 +16,7 @@ import {
   CheckCircle2 } from
 "lucide-react";
 import heroImage from "@/assets/hero-weighbridge.jpg";
+import { ScrollReveal } from "@/components/ScrollReveal";
 
 const offerings = [
 {
@@ -109,74 +110,83 @@ export default function Index() {
       {/* About Introduction */}
       <section className="py-16 lg:py-24 bg-card">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Your Partner in Precision Weighing
-            </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              Indotech Electronic Weighing Systems is a leading manufacturer and supplier of 
-              electronic weighing solutions in India. From heavy-duty weighbridges to precision 
-              jewellery scales, we provide comprehensive weighing systems backed by exceptional 
-              service and support.
-            </p>
-          </div>
+          <ScrollReveal animation="slide-up">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+                Your Partner in Precision Weighing
+              </h2>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Indotech Electronic Weighing Systems is a leading manufacturer and supplier of 
+                electronic weighing solutions in India. From heavy-duty weighbridges to precision 
+                jewellery scales, we provide comprehensive weighing systems backed by exceptional 
+                service and support.
+              </p>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
       {/* Key Offerings */}
       <section className="py-16 lg:py-24">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Our Key Offerings
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Complete range of weighing solutions for industrial, commercial, and retail applications
-            </p>
-          </div>
+          <ScrollReveal animation="fade">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Our Key Offerings
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Complete range of weighing solutions for industrial, commercial, and retail applications
+              </p>
+            </div>
+          </ScrollReveal>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {offerings.map((item) =>
-            <Card key={item.title} className="group hover:shadow-lg transition-all duration-300 border-border hover:border-primary/30">
-                <CardContent className="p-6">
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                    <item.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-2">{item.title}</h3>
-                  <p className="text-muted-foreground mb-4 font-sans">{item.description}</p>
-                  <Link
-                  to={item.link}
-                  className="inline-flex items-center text-primary font-medium hover:underline">
-
-                    Learn More
-                    <ChevronRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </CardContent>
-              </Card>
+            {offerings.map((item, index) =>
+              <ScrollReveal key={item.title} animation="slide-up" delay={index * 100}>
+                <Card className="group hover:shadow-lg transition-all duration-300 border-border hover:border-primary/30 h-full">
+                  <CardContent className="p-6">
+                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                      <item.icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-foreground mb-2">{item.title}</h3>
+                    <p className="text-muted-foreground mb-4 font-sans">{item.description}</p>
+                    <Link
+                      to={item.link}
+                      className="inline-flex items-center text-primary font-medium hover:underline">
+                      Learn More
+                      <ChevronRight className="ml-1 h-4 w-4" />
+                    </Link>
+                  </CardContent>
+                </Card>
+              </ScrollReveal>
             )}
           </div>
         </div>
       </section>
 
       {/* Why Choose Us */}
-      <section className="py-16 lg:py-24 bg-primary">
+      <section className="py-16 lg:py-24 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-              Why Choose Indotech?
-            </h2>
-            <p className="text-lg text-primary-foreground/80 max-w-2xl mx-auto">
-              Trusted by leading industries for quality, reliability, and service excellence
-            </p>
-          </div>
+          <ScrollReveal animation="fade">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
+                Why Choose Indotech?
+              </h2>
+              <p className="text-lg text-primary-foreground/80 max-w-2xl mx-auto">
+                Trusted by leading industries for quality, reliability, and service excellence
+              </p>
+            </div>
+          </ScrollReveal>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {whyChooseUs.map((item) =>
-            <div key={item.title} className="text-center">
-                <div className="h-16 w-16 rounded-full bg-primary-foreground/20 flex items-center justify-center mx-auto mb-4">
-                  <item.icon className="h-8 w-8 text-primary-foreground" />
+            {whyChooseUs.map((item, index) =>
+              <ScrollReveal key={item.title} animation="slide-up" delay={index * 150}>
+                <div className="text-center">
+                  <div className="h-16 w-16 rounded-full bg-primary-foreground/20 flex items-center justify-center mx-auto mb-4">
+                    <item.icon className="h-8 w-8 text-primary-foreground" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 text-white">{item.title}</h3>
+                  <p className="text-primary-foreground/80">{item.description}</p>
                 </div>
-                <h3 className="text-xl font-semibold text-primary-foreground mb-2">{item.title}</h3>
-                <p className="text-primary-foreground/80">{item.description}</p>
-              </div>
+              </ScrollReveal>
             )}
           </div>
         </div>
@@ -185,23 +195,24 @@ export default function Index() {
       {/* Industries Served */}
       <section className="py-16 lg:py-24 bg-card">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Industries We Serve
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Our weighing solutions power operations across diverse sectors
-            </p>
-          </div>
+          <ScrollReveal animation="fade">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Industries We Serve
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Our weighing solutions power operations across diverse sectors
+              </p>
+            </div>
+          </ScrollReveal>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {industries.map((industry) =>
-            <div
-              key={industry.name}
-              className="flex flex-col items-center p-6 rounded-lg bg-background border border-border hover:border-primary/30 hover:shadow-md transition-all">
-
-                <industry.icon className="h-8 w-8 text-primary mb-3" />
-                <span className="text-sm font-medium text-foreground text-center">{industry.name}</span>
-              </div>
+            {industries.map((industry, index) =>
+              <ScrollReveal key={industry.name} animation="zoom" delay={index * 80}>
+                <div className="flex flex-col items-center p-6 rounded-lg bg-background border border-border hover:border-primary/30 hover:shadow-md transition-all h-full">
+                  <industry.icon className="h-8 w-8 text-primary mb-3" />
+                  <span className="text-sm font-medium text-foreground text-center">{industry.name}</span>
+                </div>
+              </ScrollReveal>
             )}
           </div>
         </div>
@@ -210,24 +221,26 @@ export default function Index() {
       {/* CTA Section */}
       <section className="py-16 lg:py-24 bg-secondary">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-secondary-foreground mb-6">
-              Ready to Upgrade Your Weighing Systems?
-            </h2>
-            <p className="text-lg text-secondary-foreground/80 mb-8">
-              Get in touch with our experts for a customized solution that meets your specific requirements.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button size="lg" asChild className="text-base">
-                <Link to="/contact">
-                  Get a Free Quote
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild className="text-base bg-transparent border-secondary-foreground text-secondary-foreground hover:bg-secondary-foreground/10">
-                <Link to="/products">Browse Products</Link>
-              </Button>
+          <ScrollReveal animation="slide-up">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl font-bold text-secondary-foreground mb-6">
+                Ready to Upgrade Your Weighing Systems?
+              </h2>
+              <p className="text-lg text-secondary-foreground/80 mb-8">
+                Get in touch with our experts for a customized solution that meets your specific requirements.
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <Button size="lg" asChild className="text-base">
+                  <Link to="/contact">
+                    Get a Free Quote
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild className="text-base bg-transparent border-secondary-foreground text-secondary-foreground hover:bg-secondary-foreground/10">
+                  <Link to="/products">Browse Products</Link>
+                </Button>
+              </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 

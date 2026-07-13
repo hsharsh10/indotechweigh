@@ -20,6 +20,7 @@ import { formatPrice } from "@/data/products";
 import { fetchParts, type Part } from "@/data/parts";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
+import { ScrollReveal } from "@/components/ScrollReveal";
 import loadCellImage from "@/assets/load-cell.jpg";
 import indicatorImage from "@/assets/weighing-indicator.jpg";
 import batteryImage from "@/assets/battery.jpg";
@@ -97,71 +98,72 @@ export default function Parts() {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {parts.map((part) => {
+              {parts.map((part, index) => {
                 const imgSrc = getPartImage(part);
                 const alreadyInCart = isInCart(part.id);
 
                 return (
-                  <Card
-                    key={part.id}
-                    className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-border hover:border-primary/30 hover:-translate-y-1"
-                  >
-                    {/* Image + Discount badge */}
-                    <div className="relative aspect-[4/3] bg-muted flex items-center justify-center overflow-hidden">
-                      {part.discount > 0 && (
-                        <div className="absolute top-3 left-3 z-10">
-                          <Badge className={`text-xs font-bold px-2 py-1 ${part.discount >= 20 ? "bg-red-500 text-white animate-pulse" : "bg-primary text-primary-foreground"}`}>
-                            <Tag className="h-3 w-3 mr-1" />
-                            {part.discount}% OFF
-                          </Badge>
-                        </div>
-                      )}
-                      {imgSrc ? (
-                        <img src={imgSrc} alt={part.name} className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500" />
-                      ) : (
-                        <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                          <Settings className="h-12 w-12 text-primary" />
-                        </div>
-                      )}
-                    </div>
-
-                    <CardContent className="p-6">
-                      {/* Stock + name */}
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h3 className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-                          {part.name}
-                        </h3>
-                        <StockBadge status={part.stockStatus} />
+                  <ScrollReveal key={part.id} animation="slide-up" delay={(index % 3) * 100}>
+                    <Card
+                      className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-border hover:border-primary/30 hover:-translate-y-1 h-full"
+                    >
+                      {/* Image + Discount badge */}
+                      <div className="relative aspect-[4/3] bg-muted flex items-center justify-center overflow-hidden">
+                        {part.discount > 0 && (
+                          <div className="absolute top-3 left-3 z-10">
+                            <Badge className={`text-xs font-bold px-2 py-1 ${part.discount >= 20 ? "bg-red-500 text-white animate-pulse" : "bg-primary text-primary-foreground"}`}>
+                              <Tag className="h-3 w-3 mr-1" />
+                              {part.discount}% OFF
+                            </Badge>
+                          </div>
+                        )}
+                        {imgSrc ? (
+                          <img src={imgSrc} alt={part.name} className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500" />
+                        ) : (
+                          <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <Settings className="h-12 w-12 text-primary" />
+                          </div>
+                        )}
                       </div>
 
-                      {/* Price */}
-                      <div className="mb-4">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-xl font-bold text-primary">
-                            {formatPrice(part.price)}
-                          </span>
-                          {part.originalPrice > part.price && (
-                            <span className="text-sm text-muted-foreground line-through">
-                              {formatPrice(part.originalPrice)}
+                      <CardContent className="p-6">
+                        {/* Stock + name */}
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h3 className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+                            {part.name}
+                          </h3>
+                          <StockBadge status={part.stockStatus} />
+                        </div>
+
+                        {/* Price */}
+                        <div className="mb-4">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-xl font-bold text-primary">
+                              {formatPrice(part.price)}
                             </span>
-                          )}
+                            {part.originalPrice > part.price && (
+                              <span className="text-sm text-muted-foreground line-through">
+                                {formatPrice(part.originalPrice)}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          className="flex-1 transition-all duration-200"
-                          onClick={() => handleAddToCart(part)}
-                          disabled={addingId === part.id}
-                        >
-                          <ShoppingCart className={`h-4 w-4 mr-1.5 ${addingId === part.id ? "animate-bounce" : ""}`} />
-                          {addingId === part.id ? "Added!" : alreadyInCart ? "In Cart" : "Add to Cart"}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        {/* Actions */}
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            className="flex-1 transition-all duration-200"
+                            onClick={() => handleAddToCart(part)}
+                            disabled={addingId === part.id}
+                          >
+                            <ShoppingCart className={`h-4 w-4 mr-1.5 ${addingId === part.id ? "animate-bounce" : ""}`} />
+                            {addingId === part.id ? "Added!" : alreadyInCart ? "In Cart" : "Add to Cart"}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </ScrollReveal>
                 );
               })}
             </div>
@@ -172,27 +174,31 @@ export default function Parts() {
       {/* Why Genuine Parts */}
       <section className="py-16 bg-card border-t border-border">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
-              Why Choose Genuine Parts?
-            </h2>
-            <p className="text-muted-foreground">
-              Using authentic spare parts ensures optimal performance, accuracy, and longevity
-              of your weighing systems.
-            </p>
-          </div>
+          <ScrollReveal animation="fade">
+            <div className="max-w-3xl mx-auto text-center mb-12">
+              <h2 className="text-3xl font-bold text-foreground mb-4">
+                Why Choose Genuine Parts?
+              </h2>
+              <p className="text-muted-foreground">
+                Using authentic spare parts ensures optimal performance, accuracy, and longevity
+                of your weighing systems.
+              </p>
+            </div>
+          </ScrollReveal>
           <div className="grid md:grid-cols-4 gap-6">
             {[
               { title: "Guaranteed Quality", desc: "Factory-tested for accuracy and durability" },
               { title: "Perfect Fit", desc: "Designed specifically for your equipment" },
               { title: "Warranty Support", desc: "Full warranty on all genuine parts" },
               { title: "Technical Backup", desc: "Expert installation and support available" }
-            ].map((item) => (
-              <div key={item.title} className="text-center p-6">
-                <CheckCircle2 className="h-10 w-10 text-primary mx-auto mb-4" />
-                <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
-              </div>
+            ].map((item, index) => (
+              <ScrollReveal key={item.title} animation="slide-up" delay={index * 100}>
+                <div className="text-center p-6 h-full">
+                  <CheckCircle2 className="h-10 w-10 text-primary mx-auto mb-4" />
+                  <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground">{item.desc}</p>
+                </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -201,20 +207,22 @@ export default function Parts() {
       {/* Contact CTA */}
       <section className="py-16 bg-card border-t border-border">
         <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-              Need Spare Parts?
-            </h2>
-            <p className="text-muted-foreground mb-6">
-              Contact us with your requirements for quick quotation and delivery.
-            </p>
-            <Button size="lg" asChild>
-              <Link to="/contact">
-                <Phone className="mr-2 h-5 w-5" />
-                Request Parts Quote
-              </Link>
-            </Button>
-          </div>
+          <ScrollReveal animation="slide-up">
+            <div className="max-w-2xl mx-auto text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+                Need Spare Parts?
+              </h2>
+              <p className="text-muted-foreground mb-6">
+                Contact us with your requirements for quick quotation and delivery.
+              </p>
+              <Button size="lg" asChild>
+                <Link to="/contact">
+                  <Phone className="mr-2 h-5 w-5" />
+                  Request Parts Quote
+                </Link>
+              </Button>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
     </Layout>

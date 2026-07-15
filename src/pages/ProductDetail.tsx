@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { 
   ChevronLeft, 
+  ChevronRight,
   Scale, 
   CheckCircle2, 
   Wrench, 

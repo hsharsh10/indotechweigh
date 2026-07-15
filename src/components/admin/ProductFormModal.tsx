@@ -197,8 +197,8 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
   };
 
   const handleSave = async () => {
-    if (!formData.name || !formData.price || formData.images.length === 0) {
-      toast.error("Please fill all required fields (Name, Price, and at least 1 Image)");
+    if (!formData.name || formData.images.length === 0) {
+      toast.error("Please fill all required fields (Name and at least 1 Image)");
       return;
     }
 
@@ -220,9 +220,9 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
         id: itemId,
         name: formData.name,
         description: formData.description,
-        price: Number(formData.price),
-        original_price: Number(formData.original_price) || Number(formData.price),
-        discount: Number(formData.discount),
+        price: 0,
+        original_price: 0,
+        discount: 0,
         stock_status: formData.stock_status,
         in_stock: formData.stock_status === "in_stock",
         image: formData.images[0] || "",
@@ -289,21 +289,6 @@ export function ProductFormModal({ isOpen, onClose, onSaved, editingItem, type }
           </div>
 
           <div className="space-y-2 col-span-2 sm:col-span-1">
-            <Label>Price (₹) *</Label>
-            <Input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} placeholder="e.g. 5000" />
-          </div>
-
-          <div className="space-y-2 col-span-2 sm:col-span-1">
-            <Label>Original Price (₹)</Label>
-            <Input type="number" value={formData.original_price} onChange={e => setFormData({...formData, original_price: e.target.value})} placeholder="Before discount" />
-          </div>
-
-          <div className="space-y-2 col-span-2 sm:col-span-1">
-            <Label>Discount (%)</Label>
-            <Input type="number" value={formData.discount} onChange={e => setFormData({...formData, discount: e.target.value})} />
-          </div>
-
-          <div className="space-y-2 col-span-2">
             <Label>Stock Status</Label>
             <Select value={formData.stock_status} onValueChange={v => setFormData({...formData, stock_status: v})}>
               <SelectTrigger>

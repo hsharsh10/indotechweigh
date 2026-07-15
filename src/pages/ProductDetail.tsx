@@ -121,21 +121,20 @@ export default function ProductDetail() {
   const allImages = rawImages.map(img => resolveImageUrl(img, product)).filter((img): img is string => Boolean(img));
   const uniqueImages = [...new Set(allImages)];
 
-  const alreadyInCart = currentPrice ? isInCart(product.id) : false;
+  const alreadyInCart = isInCart(product.id);
 
   const handleAddToCart = () => {
-    if (!currentPrice) return;
     setAdding(true);
     addToCart({
       productId: product.id,
       name: product.name,
-      price: currentPrice,
-      originalPrice: currentOriginalPrice ?? currentPrice,
+      price: 0,
+      originalPrice: 0,
       quantity,
       image: displayImgSrc || "/placeholder.svg",
       type: "product",
     });
-    toast.success(`${product.name} added to cart!`, {
+    toast.success(`${product.name} added to enquiry list!`, {
       description: `Quantity: ${quantity}`,
     });
     setTimeout(() => setAdding(false), 800);
@@ -212,20 +211,9 @@ export default function ProductDetail() {
 
               {/* Price Section */}
               <div className="mb-6">
-                {currentPrice ? (
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-3xl font-bold text-primary">
-                      {formatPrice(currentPrice)}
-                    </span>
-                    {currentOriginalPrice && currentOriginalPrice > currentPrice && (
-                      <span className="text-lg text-muted-foreground line-through">
-                        {formatPrice(currentOriginalPrice)}
-                      </span>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-lg font-semibold text-muted-foreground italic">Price on Request</span>
-                )}
+                <Badge variant="outline" className="text-sm px-3 py-1 font-semibold text-primary border-primary/30">
+                  Price on Request
+                </Badge>
               </div>
 
               <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
@@ -248,64 +236,50 @@ export default function ProductDetail() {
                 )}
               </div>
 
-              {/* Quantity + Add to Cart Actions */}
-              {currentPrice ? (
-                <div className="space-y-4 mb-8">
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm font-medium text-foreground">Quantity:</span>
-                    <div className="flex items-center border border-border rounded-lg">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9"
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        disabled={quantity <= 1}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="w-10 text-center font-semibold text-sm">{quantity}</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9"
-                        onClick={() => setQuantity(quantity + 1)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-4 pt-2">
+              {/* Quantity + Add to Enquiry Actions */}
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-medium text-foreground">Quantity:</span>
+                  <div className="flex items-center border border-border rounded-lg bg-card">
                     <Button
-                      size="lg"
-                      className="flex-1 text-base py-6"
-                      onClick={handleAddToCart}
-                      disabled={adding}
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      disabled={quantity <= 1}
                     >
-                      <ShoppingCart className={`mr-2 h-5 w-5 ${adding ? "animate-bounce" : ""}`} />
-                      {adding ? "Adding to Cart..." : alreadyInCart ? "Add More to Cart" : "Add to Cart"}
+                      <Minus className="h-4 w-4" />
                     </Button>
-                    <Button size="lg" variant="outline" asChild className="py-6">
-                      <Link to="/contact">
-                        <Phone className="mr-2 h-5 w-5" />
-                        Get Quote
-                      </Link>
+                    <span className="w-10 text-center font-semibold text-sm">{quantity}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9"
+                      onClick={() => setQuantity(quantity + 1)}
+                    >
+                      <Plus className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
-              ) : (
-                <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                  <Button size="lg" asChild className="flex-1 py-6">
-                    <Link to="/contact">
-                      <Phone className="mr-2 h-5 w-5" />
-                      Request a Quote
-                    </Link>
+
+                <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                  <Button
+                    size="lg"
+                    className="flex-1 text-base py-6"
+                    onClick={handleAddToCart}
+                    disabled={adding}
+                  >
+                    <ShoppingCart className={`mr-2 h-5 w-5 ${adding ? "animate-bounce" : ""}`} />
+                    {adding ? "Adding to list..." : alreadyInCart ? "Add More to Enquiry List" : "Add to Enquiry List"}
                   </Button>
                   <Button size="lg" variant="outline" asChild className="py-6">
-                    <Link to="/parts">View Spare Parts</Link>
+                    <Link to="/checkout">
+                      <ChevronRight className="mr-2 h-5 w-5" />
+                      Proceed to Enquiry
+                    </Link>
                   </Button>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>

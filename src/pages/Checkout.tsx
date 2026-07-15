@@ -45,18 +45,17 @@ const INDIAN_STATES = [
   "Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry",
 ];
 
-const UPI_ID = "indotechweigh@okhdfcbank";
 const COD_LIMIT = 10000;
 
 const steps = [
   { id: 1, label: "Details", icon: User },
   { id: 2, label: "Address", icon: MapPin },
-  { id: 3, label: "Payment", icon: CreditCard },
+  { id: 3, label: "Submit", icon: CheckCircle2 },
 ];
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const { state: cartState, getSubtotal, getGST, getShipping, getTotal, clearCart } = useCart();
+  const { state: cartState, clearCart } = useCart();
   const { createOrder } = useOrders();
 
   const [step, setStep] = useState(1);
@@ -74,17 +73,9 @@ export default function Checkout() {
     addressLine1: "", addressLine2: "", city: "", state: "", pinCode: "", addressType: "office" as "home" | "office" | "factory",
   });
 
-  // Step 3 — Payment
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("upi");
-  const [transactionId, setTransactionId] = useState("");
-  const [paymentProof, setPaymentProof] = useState<File | null>(null);
-  const [paymentProofName, setPaymentProofName] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Step 3 — Enquiry Notes
+  const [notes, setNotes] = useState("");
 
-  const subtotal = getSubtotal();
-  const gst = getGST();
-  const shipping = getShipping();
-  const total = getTotal();
   const items = cartState.items;
 
   if (items.length === 0) {
@@ -92,8 +83,8 @@ export default function Checkout() {
       <Layout>
         <div className="container mx-auto px-4 py-24 text-center">
           <ShoppingCart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-foreground mb-2">Your cart is empty</h2>
-          <p className="text-muted-foreground mb-6">Add some products before checking out.</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Your enquiry list is empty</h2>
+          <p className="text-muted-foreground mb-6">Add some products before submitting an enquiry.</p>
           <Button asChild><Link to="/products">Browse Products</Link></Button>
         </div>
       </Layout>
@@ -117,74 +108,28 @@ export default function Checkout() {
     return true;
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { toast.error("File size must be under 5MB"); return; }
-    setPaymentProofName(file.name);
-    setPaymentProof(file);
-  };
-
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text).then(() => toast.success(`${label} copied!`));
-  };
-
   const handlePlaceOrder = async () => {
-    if (paymentMethod !== "cod" && !transactionId.trim()) {
-      toast.error("Please enter the Transaction ID / UTR number");
-      return;
-    }
-    if (paymentMethod !== "cod" && !paymentProof) {
-      toast.error("Please upload your payment screenshot");
-      return;
-    }
     setPlacing(true);
     try {
-      let proofUrl = undefined;
-      
-      if (paymentMethod !== "cod" && paymentProof) {
-        const fileExt = paymentProof.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-        const filePath = `receipts/${fileName}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('payment_proofs')
-          .upload(filePath, paymentProof);
-          
-        if (uploadError) {
-          console.error("Upload error:", uploadError);
-          toast.error("Failed to upload screenshot. Please try again.");
-          setPlacing(false);
-          return;
-        }
-        
-        const { data: { publicUrl } } = supabase.storage
-          .from('payment_proofs')
-          .getPublicUrl(filePath);
-          
-        proofUrl = publicUrl;
-      }
-
       const order = await createOrder({
         items,
         customer,
         shippingAddress: address,
         payment: {
-          method: paymentMethod,
-          transactionId: transactionId || undefined,
-          paymentProof: proofUrl,
+          method: "cod",
         },
-        status: paymentMethod === "cod" ? "confirmed" : "pending_verification",
-        subtotal,
-        gst,
-        shipping,
-        total,
+        status: "pending_verification",
+        subtotal: 0,
+        gst: 0,
+        shipping: 0,
+        total: 0,
+        notes: notes,
       });
       clearCart();
       navigate(`/order-confirmation/${order.orderId}`);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to place order. Please try again.");
+      toast.error("Failed to submit enquiry. Please try again.");
     } finally {
       setPlacing(false);
     }
@@ -341,7 +286,7 @@ export default function Checkout() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-3 mt-2">
+                  <div className="flex gap-3 mt-4">
                     <Button variant="outline" onClick={() => setStep(1)}>
                       <ChevronLeft className="mr-2 h-4 w-4" /> Back
                     </Button>
@@ -353,183 +298,33 @@ export default function Checkout() {
               </Card>
             )}
 
-            {/* Step 3: Payment */}
+            {/* Step 3: Submit Enquiry */}
             {step === 3 && (
               <Card className="animate-fade-in-up">
                 <CardContent className="p-6 space-y-6">
                   <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-primary" /> Select Payment Method
+                    <CheckCircle2 className="h-5 w-5 text-primary" /> Review & Submit Enquiry
                   </h2>
 
-                  {/* Payment method cards */}
-                  <div className="space-y-3">
-                    {/* UPI */}
-                    <button onClick={() => setPaymentMethod("upi")}
-                      className={`w-full p-4 rounded-xl border-2 text-left transition-all ${paymentMethod === "upi" ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
-                      <div className="flex items-center gap-3">
-                        <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${paymentMethod === "upi" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                          <Smartphone className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-foreground">UPI Payment</p>
-                          <p className="text-xs text-muted-foreground">Pay via Google Pay, PhonePe, Paytm, or any UPI app</p>
-                        </div>
-                      </div>
-                      {paymentMethod === "upi" && (
-                        <div className="mt-4 p-4 rounded-lg bg-card border border-border animate-fade-in-up space-y-4" onClick={e => e.stopPropagation()}>
-                          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                            {/* QR Code Container */}
-                            <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm max-w-[180px] flex-shrink-0 flex flex-col items-center mx-auto md:mx-0">
-                              <img src={qrCode} alt="GPay QR Code" className="w-full h-auto rounded" />
-                              <span className="text-[10px] text-slate-400 font-semibold mt-2">Scan with any UPI App</span>
-                            </div>
-                            {/* Details Container */}
-                            <div className="flex-1 space-y-3 w-full">
-                              <div>
-                                <p className="text-xs text-muted-foreground">UPI ID</p>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <p className="text-sm md:text-base font-bold text-primary">{UPI_ID}</p>
-                                  <Button variant="outline" size="sm" className="h-7 px-2" onClick={() => copyToClipboard(UPI_ID, "UPI ID")}>
-                                    <Copy className="h-3.5 w-3.5 mr-1" /> Copy
-                                  </Button>
-                                </div>
-                              </div>
-                              <div className="grid grid-cols-2 gap-3 text-sm">
-                                <div>
-                                  <p className="text-xs text-muted-foreground">Payee Name</p>
-                                  <p className="font-semibold text-foreground">DEVENDER SHARMA</p>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-muted-foreground">Business Name</p>
-                                  <p className="font-semibold text-foreground truncate">Indotech Electronic Weighing</p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <p className="text-xs text-muted-foreground border-t border-border pt-3">
-                            After payment, upload the screenshot and enter the UTR/Transaction number below.
-                          </p>
-                        </div>
-                      )}
-                    </button>
-
-                    {/* Bank Transfer */}
-                    <button onClick={() => setPaymentMethod("bank_transfer")}
-                      className={`w-full p-4 rounded-xl border-2 text-left transition-all ${paymentMethod === "bank_transfer" ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
-                      <div className="flex items-center gap-3">
-                        <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${paymentMethod === "bank_transfer" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                          <Building className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-foreground">Bank Transfer</p>
-                          <p className="text-xs text-muted-foreground">Pay via NEFT, RTGS, IMPS or net banking</p>
-                        </div>
-                      </div>
-                      {paymentMethod === "bank_transfer" && (
-                        <div className="mt-4 p-4 rounded-lg bg-card border border-border animate-fade-in-up space-y-3" onClick={e => e.stopPropagation()}>
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Bank Account Details</p>
-                          <div className="grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                              <p className="text-xs text-muted-foreground">Bank Name</p>
-                              <p className="font-semibold text-foreground">Kotak Mahindra Bank</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">Branch</p>
-                              <p className="font-semibold text-foreground">Ashok Vihar</p>
-                            </div>
-                            <div className="col-span-2">
-                              <p className="text-xs text-muted-foreground">Account Name</p>
-                              <p className="font-semibold text-foreground">Indotech Electronic Weighing Systems</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">Account Number</p>
-                              <div className="flex items-center gap-1.5 mt-0.5">
-                                <p className="font-bold text-primary">6411245870</p>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard("6411245870", "Account Number")}>
-                                  <Copy className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">IFSC Code</p>
-                              <div className="flex items-center gap-1.5 mt-0.5">
-                                <p className="font-bold text-primary">KKBK0000215</p>
-                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard("KKBK0000215", "IFSC Code")}>
-                                  <Copy className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                          <p className="text-xs text-muted-foreground border-t border-border pt-3">
-                            After payment, upload the screenshot and enter the UTR/Reference number below.
-                          </p>
-                        </div>
-                      )}
-                    </button>
-
-                    {/* COD */}
-                    <button
-                      onClick={() => total <= COD_LIMIT && setPaymentMethod("cod")}
-                      disabled={total > COD_LIMIT}
-                      className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
-                        total > COD_LIMIT ? "opacity-50 cursor-not-allowed border-border" :
-                        paymentMethod === "cod" ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
-                      }`}>
-                      <div className="flex items-center gap-3">
-                        <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${paymentMethod === "cod" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                          <Truck className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-foreground">Pay on Delivery</p>
-                          <p className="text-xs text-muted-foreground">
-                            {total > COD_LIMIT ? `Not available for orders above ${formatPrice(COD_LIMIT)}` : "Pay cash at the time of delivery"}
-                          </p>
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-
-                  {/* Payment proof upload (bank / UPI only) */}
-                  {paymentMethod !== "cod" && (
-                    <div className="space-y-4 pt-2 border-t border-border animate-fade-in-up">
-                      <div>
-                        <Label htmlFor="utr">Transaction ID / UTR Number *</Label>
-                        <Input id="utr" placeholder="e.g. UTR123456789012" value={transactionId}
-                          onChange={e => setTransactionId(e.target.value)} className="mt-1" />
-                      </div>
-                      <div>
-                        <Label>Payment Screenshot *</Label>
-                        <div
-                          onClick={() => fileInputRef.current?.click()}
-                          className={`mt-1 border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
-                            paymentProof ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                          }`}
-                        >
-                          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
-                          {paymentProof ? (
-                            <div className="space-y-2">
-                              <CheckCircle2 className="h-8 w-8 text-primary mx-auto" />
-                              <p className="text-sm font-medium text-primary">{paymentProofName}</p>
-                              <p className="text-xs text-muted-foreground">Click to change</p>
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              <Upload className="h-8 w-8 text-muted-foreground mx-auto" />
-                              <p className="text-sm text-muted-foreground">Click to upload payment screenshot</p>
-                              <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="enquiryNotes">Special Requirements / Customization Details</Label>
+                      <textarea
+                        id="enquiryNotes"
+                        placeholder="Please write capacity requirements, accuracy details, installation requests, or any other query..."
+                        value={notes}
+                        onChange={e => setNotes(e.target.value)}
+                        className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 mt-1"
+                      />
                     </div>
-                  )}
+                  </div>
 
                   <div className="flex gap-3 pt-2">
                     <Button variant="outline" onClick={() => setStep(2)}>
                       <ChevronLeft className="mr-2 h-4 w-4" /> Back
                     </Button>
                     <Button className="flex-1" size="lg" onClick={handlePlaceOrder} disabled={placing}>
-                      {placing ? "Placing Order..." : "Place Order"}
+                      {placing ? "Submitting..." : "Submit Enquiry Request"}
                       {!placing && <ChevronRight className="ml-2 h-4 w-4" />}
                     </Button>
                   </div>
@@ -538,12 +333,12 @@ export default function Checkout() {
             )}
           </div>
 
-          {/* Right: Order Summary */}
+          {/* Right: Enquiry Summary */}
           <div>
             <Card className="sticky top-24">
               <CardContent className="p-5">
-                <h3 className="font-bold text-foreground mb-4">Order Summary</h3>
-                <div className="space-y-3 max-h-52 overflow-y-auto pr-1 mb-4">
+                <h3 className="font-bold text-foreground mb-4">Enquiry Summary</h3>
+                <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
                   {items.map(item => (
                     <div key={item.id} className="flex gap-3">
                       <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
@@ -553,20 +348,11 @@ export default function Checkout() {
                         <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
                         {item.variant && <p className="text-xs text-muted-foreground">{item.variant}</p>}
                         <div className="flex justify-between mt-0.5">
-                          <span className="text-xs text-muted-foreground">× {item.quantity}</span>
-                          <span className="text-xs font-semibold text-foreground">{formatPrice(item.price * item.quantity)}</span>
+                          <span className="text-xs font-semibold text-foreground bg-slate-100 px-2 py-0.5 rounded border">Qty: {item.quantity}</span>
                         </div>
                       </div>
                     </div>
                   ))}
-                </div>
-                <Separator className="mb-3" />
-                <div className="space-y-1.5 text-sm">
-                  <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
-                  <div className="flex justify-between text-muted-foreground"><span>GST (18%)</span><span>{formatPrice(gst)}</span></div>
-                  <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span>{shipping === 0 ? <span className="text-green-600 font-medium">FREE</span> : formatPrice(shipping)}</span></div>
-                  <Separator className="my-2" />
-                  <div className="flex justify-between font-bold text-base"><span>Total</span><span className="text-primary">{formatPrice(total)}</span></div>
                 </div>
               </CardContent>
             </Card>

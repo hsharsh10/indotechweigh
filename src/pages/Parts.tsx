@@ -107,16 +107,8 @@ export default function Parts() {
                     <Card
                       className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-border hover:border-primary/30 hover:-translate-y-1 h-full"
                     >
-                      {/* Image + Discount badge */}
+                      {/* Image */}
                       <div className="relative aspect-[4/3] bg-muted flex items-center justify-center overflow-hidden">
-                        {part.discount > 0 && (
-                          <div className="absolute top-3 left-3 z-10">
-                            <Badge className={`text-xs font-bold px-2 py-1 ${part.discount >= 20 ? "bg-red-500 text-white animate-pulse" : "bg-primary text-primary-foreground"}`}>
-                              <Tag className="h-3 w-3 mr-1" />
-                              {part.discount}% OFF
-                            </Badge>
-                          </div>
-                        )}
                         {imgSrc ? (
                           <img src={imgSrc} alt={part.name} className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500" />
                         ) : (
@@ -135,18 +127,11 @@ export default function Parts() {
                           <StockBadge status={part.stockStatus} />
                         </div>
 
-                        {/* Price */}
+                        {/* Price on request message */}
                         <div className="mb-4">
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-xl font-bold text-primary">
-                              {formatPrice(part.price)}
-                            </span>
-                            {part.originalPrice > part.price && (
-                              <span className="text-sm text-muted-foreground line-through">
-                                {formatPrice(part.originalPrice)}
-                              </span>
-                            )}
-                          </div>
+                          <Badge variant="outline" className="text-xs px-2 py-0.5 font-medium text-primary border-primary/20">
+                            Price on Request
+                          </Badge>
                         </div>
 
                         {/* Actions */}
@@ -158,7 +143,7 @@ export default function Parts() {
                             disabled={addingId === part.id}
                           >
                             <ShoppingCart className={`h-4 w-4 mr-1.5 ${addingId === part.id ? "animate-bounce" : ""}`} />
-                            {addingId === part.id ? "Added!" : alreadyInCart ? "In Cart" : "Add to Cart"}
+                            {addingId === part.id ? "Added!" : alreadyInCart ? "In Enquiry List" : "Add to Enquiry"}
                           </Button>
                         </div>
                       </CardContent>

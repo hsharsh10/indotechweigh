@@ -20,17 +20,17 @@ import { useOrders, type Order, type OrderStatus } from "@/context/OrderContext"
 import { formatPrice } from "@/data/products";
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-  pending_verification: { label: "Payment Pending", color: "bg-amber-100 text-amber-700 border-amber-200", icon: Clock },
-  confirmed: { label: "Confirmed", color: "bg-blue-100 text-blue-700 border-blue-200", icon: CheckCircle2 },
-  processing: { label: "Processing", color: "bg-indigo-100 text-indigo-700 border-indigo-200", icon: Package },
-  shipped: { label: "Shipped", color: "bg-purple-100 text-purple-700 border-purple-200", icon: Truck },
-  delivered: { label: "Delivered", color: "bg-green-100 text-green-700 border-green-200", icon: CheckCircle2 },
+  pending_verification: { label: "Pending Review", color: "bg-amber-100 text-amber-700 border-amber-200", icon: Clock },
+  confirmed: { label: "Quotation Sent", color: "bg-blue-100 text-blue-700 border-blue-200", icon: CheckCircle2 },
+  processing: { label: "Under Negotiation", color: "bg-indigo-100 text-indigo-700 border-indigo-200", icon: Package },
+  shipped: { label: "Order Confirmed", color: "bg-purple-100 text-purple-700 border-purple-200", icon: Truck },
+  delivered: { label: "Completed", color: "bg-green-100 text-green-700 border-green-200", icon: CheckCircle2 },
   cancelled: { label: "Cancelled", color: "bg-red-100 text-red-700 border-red-200", icon: Package },
-  rejected: { label: "Payment Rejected", color: "bg-red-100 text-red-700 border-red-200", icon: Package },
+  rejected: { label: "Rejected", color: "bg-red-100 text-red-700 border-red-200", icon: Package },
 };
 
 const ORDER_PROGRESS = ["pending_verification", "confirmed", "processing", "shipped", "delivered"];
-const PROGRESS_LABELS = ["Placed", "Verified", "Processing", "Shipped", "Delivered"];
+const PROGRESS_LABELS = ["Received", "Quotation Sent", "Negotiation", "Order Confirmed", "Completed"];
 
 function OrderCard({ order }: { order: Order }) {
   const [expanded, setExpanded] = useState(false);
@@ -66,9 +66,8 @@ function OrderCard({ order }: { order: Order }) {
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">{formatDate(order.createdAt)}</p>
-            <p className="text-sm text-muted-foreground">
-              {order.items.reduce((s, i) => s + i.quantity, 0)} items ·{" "}
-              <span className="font-semibold text-foreground">{formatPrice(order.total)}</span>
+            <p className="text-sm text-muted-foreground mt-1">
+              Requested Items: <span className="font-semibold text-foreground">{order.items.reduce((s, i) => s + i.quantity, 0)}</span>
             </p>
           </div>
         </div>
@@ -110,32 +109,24 @@ function OrderCard({ order }: { order: Order }) {
 
           {/* Items */}
           <div className="p-5 border-b border-border">
-            <h4 className="font-semibold text-foreground mb-3 text-sm">Items Ordered</h4>
+            <h4 className="font-semibold text-foreground mb-3 text-sm">Requested Items</h4>
             <div className="space-y-2">
               {order.items.map(item => (
                 <div key={item.id} className="flex justify-between text-sm">
                   <div>
                     <span className="text-foreground">{item.name}</span>
                     {item.variant && <span className="text-muted-foreground"> · {item.variant}</span>}
-                    <span className="text-muted-foreground"> × {item.quantity}</span>
                   </div>
-                  <span className="font-medium text-foreground">{formatPrice(item.price * item.quantity)}</span>
+                  <Badge variant="secondary">Qty: {item.quantity}</Badge>
                 </div>
               ))}
-            </div>
-            <Separator className="my-3" />
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{formatPrice(order.subtotal)}</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>GST (18%)</span><span>{formatPrice(order.gst)}</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>Shipping</span><span>{order.shipping === 0 ? "FREE" : formatPrice(order.shipping)}</span></div>
-              <div className="flex justify-between font-bold text-foreground pt-1"><span>Total</span><span className="text-primary">{formatPrice(order.total)}</span></div>
             </div>
           </div>
 
           {/* Shipping address */}
           <div className="p-5 border-b border-border">
             <h4 className="font-semibold text-foreground mb-2 text-sm flex items-center gap-1.5">
-              <MapPin className="h-4 w-4 text-primary" /> Shipping Address
+              <MapPin className="h-4 w-4 text-primary" /> Delivery/Installation Address
             </h4>
             <p className="text-sm text-muted-foreground">
               {order.shippingAddress.addressLine1}
@@ -144,19 +135,15 @@ function OrderCard({ order }: { order: Order }) {
             </p>
           </div>
 
-          {/* Payment info */}
-          <div className="p-5">
-            <h4 className="font-semibold text-foreground mb-1 text-sm">Payment</h4>
-            <p className="text-sm text-muted-foreground capitalize">
-              {order.payment.method.replace(/_/g, " ")}
-              {order.payment.transactionId && ` · UTR: ${order.payment.transactionId}`}
-            </p>
-            {order.adminNotes && (
-              <p className="text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-2">
-                Note from Indotech: {order.adminNotes}
+          {/* Admin notes */}
+          {order.adminNotes && (
+            <div className="p-5 border-t border-border">
+              <h4 className="font-semibold text-foreground mb-1 text-sm">Note from Indotech</h4>
+              <p className="text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+                {order.adminNotes}
               </p>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -190,8 +177,8 @@ export default function MyOrders() {
     <Layout>
       <section className="bg-secondary py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-3xl text-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-secondary-foreground mb-4">My Orders</h1>
-          <p className="text-secondary-foreground/80 mb-8">Track all your orders by entering your billing phone number.</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-secondary-foreground mb-4">My Enquiries</h1>
+          <p className="text-secondary-foreground/80 mb-8">Track all your quotation requests by entering your billing phone number.</p>
           
           <form onSubmit={handleSearch} className="flex gap-2 max-w-md mx-auto">
             <div className="relative flex-1">
@@ -216,25 +203,25 @@ export default function MyOrders() {
           {!searched ? (
             <div className="text-center py-20 opacity-50">
               <ShoppingCart className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-              <p>Enter your phone number above to see your orders.</p>
+              <p>Enter your phone number above to see your enquiry requests.</p>
             </div>
           ) : loading ? (
             <div className="text-center py-20">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p>Looking up orders...</p>
+              <p>Looking up enquiries...</p>
             </div>
           ) : orders.length === 0 ? (
             <div className="text-center py-20">
               <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                 <ShoppingCart className="h-10 w-10 text-muted-foreground" />
               </div>
-              <h2 className="text-xl font-bold text-foreground mb-2">No orders found</h2>
-              <p className="text-muted-foreground mb-6">We couldn't find any orders for {phone}.</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">No enquiries found</h2>
+              <p className="text-muted-foreground mb-6">We couldn't find any enquiries for {phone}.</p>
               <Button asChild size="lg"><Link to="/products">Browse Products</Link></Button>
             </div>
           ) : (
             <div className="space-y-4">
-              <h3 className="font-semibold text-foreground mb-4">Found {orders.length} order{orders.length > 1 ? 's' : ''}</h3>
+              <h3 className="font-semibold text-foreground mb-4">Found {orders.length} enquiry request{orders.length > 1 ? 's' : ''}</h3>
               {orders.map(order => <OrderCard key={order.orderId} order={order} />)}
             </div>
           )}

@@ -41,7 +41,7 @@ export function CartDrawer() {
           <div className="flex items-center justify-between">
             <SheetTitle className="flex items-center gap-2 text-foreground">
               <ShoppingCart className="h-5 w-5 text-primary" />
-              Your Cart
+              Enquiry List
               {items.length > 0 && (
                 <Badge variant="secondary" className="ml-1">
                   {items.reduce((s, i) => s + i.quantity, 0)} items
@@ -60,9 +60,9 @@ export function CartDrawer() {
                 <ShoppingCart className="h-10 w-10 text-muted-foreground" />
               </div>
               <div>
-                <p className="text-lg font-semibold text-foreground mb-1">Your cart is empty</p>
+                <p className="text-lg font-semibold text-foreground mb-1">Your enquiry list is empty</p>
                 <p className="text-sm text-muted-foreground">
-                  Add products to your cart to get started
+                  Add products to your list to request a quote
                 </p>
               </div>
               <Button asChild onClick={closeCart}>
@@ -92,14 +92,6 @@ export function CartDrawer() {
                         <Tag className="h-3 w-3 text-muted-foreground" />
                         <p className="text-xs text-muted-foreground">{item.variant}</p>
                       </div>
-                    )}
-                    <p className="text-sm font-semibold text-primary mt-1">
-                      {formatPrice(item.price)}
-                    </p>
-                    {item.originalPrice > item.price && (
-                      <p className="text-xs text-muted-foreground line-through">
-                        {formatPrice(item.originalPrice)}
-                      </p>
                     )}
 
                     {/* Quantity & Remove */}
@@ -138,46 +130,13 @@ export function CartDrawer() {
           )}
         </div>
 
-        {/* Footer - Price summary + checkout */}
+        {/* Footer - checkout */}
         {items.length > 0 && (
           <div className="border-t border-border px-6 py-4 space-y-3 bg-card">
-            {/* Free shipping banner */}
-            {shipping > 0 && (
-              <div className="text-xs text-center text-muted-foreground bg-muted rounded-md py-2 px-3">
-                🚚 Add {formatPrice(10000 - subtotal)} more for <span className="font-semibold text-primary">FREE shipping</span>
-              </div>
-            )}
-            {shipping === 0 && subtotal > 0 && (
-              <div className="text-xs text-center text-green-600 bg-green-50 dark:bg-green-950/20 rounded-md py-2 px-3 font-medium">
-                🎉 You qualify for FREE shipping!
-              </div>
-            )}
-
-            {/* Price breakdown */}
-            <div className="space-y-1.5 text-sm">
-              <div className="flex justify-between text-muted-foreground">
-                <span>Subtotal</span>
-                <span>{formatPrice(subtotal)}</span>
-              </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>GST (18%)</span>
-                <span>{formatPrice(gst)}</span>
-              </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>Shipping</span>
-                <span>{shipping === 0 ? <span className="text-green-600 font-medium">FREE</span> : formatPrice(shipping)}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between font-bold text-base text-foreground">
-                <span>Total</span>
-                <span className="text-primary">{formatPrice(total)}</span>
-              </div>
-            </div>
-
             {/* Checkout button */}
             <Button asChild className="w-full" size="lg" onClick={closeCart}>
               <Link to="/checkout" className="flex items-center justify-center gap-2">
-                Proceed to Checkout
+                Request Quotation
                 <ChevronRight className="h-4 w-4" />
               </Link>
             </Button>

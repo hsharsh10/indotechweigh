@@ -88,16 +88,14 @@ export default function OrderConfirmation() {
               <CheckCircle2 className="h-14 w-14 text-green-600" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-foreground mt-6 mb-2">Order Placed Successfully!</h1>
+          <h1 className="text-3xl font-bold text-foreground mt-6 mb-2">Enquiry Submitted!</h1>
           <p className="text-muted-foreground text-lg">
-            {isCOD
-              ? "Your order is confirmed. We'll contact you to arrange delivery."
-              : "We've received your order. Please wait for payment verification."}
+            We have received your quotation request. Our representative will contact you shortly.
           </p>
 
-          {/* Order ID */}
+          {/* Enquiry ID */}
           <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-muted rounded-lg border border-border">
-            <span className="text-sm text-muted-foreground">Order ID:</span>
+            <span className="text-sm text-muted-foreground">Enquiry ID:</span>
             <span className="font-bold text-foreground">{order.orderId}</span>
             <button onClick={copyOrderId} className="text-muted-foreground hover:text-foreground transition-colors">
               <Copy className="h-4 w-4" />
@@ -106,45 +104,29 @@ export default function OrderConfirmation() {
 
           {/* Status */}
           <div className="mt-4">
-            {isCOD ? (
-              <Badge className="bg-green-100 text-green-700 border-green-200 text-sm px-4 py-1.5">
-                ✓ Confirmed — Pay on Delivery
-              </Badge>
-            ) : (
-              <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-sm px-4 py-1.5">
-                ⏳ Payment Verification Pending
-              </Badge>
-            )}
+            <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-sm px-4 py-1.5 font-medium">
+              ⏳ Pending Quote Verification
+            </Badge>
           </div>
         </div>
 
         {/* What's Next */}
-        <div className={`rounded-xl p-5 mb-8 border ${isCOD ? "bg-green-50 border-green-200" : "bg-amber-50 border-amber-200"}`}>
+        <div className="rounded-xl p-5 mb-8 border bg-amber-50 border-amber-200">
           <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
             <Clock className="h-5 w-5" /> What Happens Next?
           </h3>
-          {isCOD ? (
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Your order has been confirmed and is being processed.</li>
-              <li>• Our team will call you within 24 hours to confirm delivery details.</li>
-              <li>• Estimated delivery: <strong>5–7 business days</strong>.</li>
-              <li>• Please keep the exact amount ready for payment at delivery.</li>
-            </ul>
-          ) : (
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Our team will verify your payment within <strong>2–4 business hours</strong>.</li>
-              <li>• You'll be able to track the updated status on your <strong>My Orders</strong> page.</li>
-              <li>• Once verified, your order will be processed for shipment.</li>
-              <li>• Estimated delivery: <strong>5–7 business days</strong> after confirmation.</li>
-            </ul>
-          )}
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• Our sales team will review your requested item list.</li>
+            <li>• We will draft a custom quotation based on your customization notes.</li>
+            <li>• A representative will contact you within <strong>24 business hours</strong> to share details.</li>
+          </ul>
         </div>
 
-        {/* Order Items */}
+        {/* Enquiry Items */}
         <div className="bg-card rounded-xl border border-border overflow-hidden mb-6">
           <div className="p-5 border-b border-border">
             <h3 className="font-semibold text-foreground flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5 text-primary" /> Order Items
+              <ShoppingBag className="h-5 w-5 text-primary" /> Enquiry Items
             </h3>
           </div>
           <div className="divide-y divide-border">
@@ -153,28 +135,10 @@ export default function OrderConfirmation() {
                 <div>
                   <p className="font-medium text-foreground">{item.name}</p>
                   {item.variant && <p className="text-sm text-muted-foreground">{item.variant}</p>}
-                  <p className="text-sm text-muted-foreground">× {item.quantity}</p>
                 </div>
-                <p className="font-semibold text-foreground">{formatPrice(item.price * item.quantity)}</p>
+                <Badge variant="secondary" className="font-semibold text-sm">Qty: {item.quantity}</Badge>
               </div>
             ))}
-          </div>
-          <div className="p-5 bg-muted/30 border-t border-border space-y-1.5 text-sm">
-            <div className="flex justify-between text-muted-foreground">
-              <span>Subtotal</span><span>{formatPrice(order.subtotal)}</span>
-            </div>
-            <div className="flex justify-between text-muted-foreground">
-              <span>GST (18%)</span><span>{formatPrice(order.gst)}</span>
-            </div>
-            <div className="flex justify-between text-muted-foreground">
-              <span>Shipping</span>
-              <span>{order.shipping === 0 ? "FREE" : formatPrice(order.shipping)}</span>
-            </div>
-            <Separator className="my-2" />
-            <div className="flex justify-between font-bold text-base">
-              <span>Total Paid</span>
-              <span className="text-primary">{formatPrice(order.total)}</span>
-            </div>
           </div>
         </div>
 
@@ -205,22 +169,13 @@ export default function OrderConfirmation() {
           </div>
         </div>
 
-        {/* Payment Method */}
-        <div className="bg-card rounded-xl border border-border p-5 mb-8">
-          <h4 className="font-semibold text-foreground mb-2">Payment Method</h4>
-          <p className="text-sm text-muted-foreground">{PAYMENT_METHOD_LABELS[order.payment.method]}</p>
-          {order.payment.transactionId && (
-            <p className="text-sm text-muted-foreground mt-1">UTR / Transaction ID: <span className="font-medium text-foreground">{order.payment.transactionId}</span></p>
-          )}
-        </div>
-
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <Button asChild className="flex-1" size="lg">
-            <Link to="/my-orders">Track My Order</Link>
+            <Link to="/my-orders">Track My Enquiries</Link>
           </Button>
           <Button variant="outline" asChild className="flex-1" size="lg">
-            <Link to="/products">Continue Shopping</Link>
+            <Link to="/products">Continue Browsing</Link>
           </Button>
         </div>
 

@@ -25,11 +25,11 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
 };
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending_verification: "Pending",
-  confirmed: "Confirmed",
-  processing: "Processing",
-  shipped: "Shipped",
-  delivered: "Delivered",
+  pending_verification: "Pending Review",
+  confirmed: "Quotation Sent",
+  processing: "Under Negotiation",
+  shipped: "Order Confirmed",
+  delivered: "Completed",
   cancelled: "Cancelled",
   rejected: "Rejected",
 };
@@ -63,11 +63,7 @@ export default function AdminDashboard() {
     total: orders.length,
     pending: orders.filter((o) => o.status === "pending_verification").length,
     confirmed: orders.filter((o) => o.status === "confirmed" || o.status === "processing").length,
-    shipped: orders.filter((o) => o.status === "shipped").length,
-    delivered: orders.filter((o) => o.status === "delivered").length,
-    revenue: orders
-      .filter((o) => o.status !== "cancelled" && o.status !== "rejected")
-      .reduce((sum, o) => sum + o.total, 0),
+    completed: orders.filter((o) => o.status === "delivered").length,
   };
 
   const recentOrders = orders
@@ -85,10 +81,10 @@ export default function AdminDashboard() {
   }
 
   const statCards = [
-    { label: "Total Orders", value: stats.total, icon: ShoppingCart, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100" },
-    { label: "Pending Verification", value: stats.pending, icon: Clock, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-100", attention: stats.pending > 0 },
-    { label: "Confirmed", value: stats.confirmed, icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50", border: "border-green-100" },
-    { label: "Total Revenue", value: formatPrice(stats.revenue), icon: TrendingUp, color: "text-primary", bg: "bg-primary/5", border: "border-primary/10", isRevenue: true },
+    { label: "Total Enquiries", value: stats.total, icon: ShoppingCart, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100" },
+    { label: "Pending Review", value: stats.pending, icon: Clock, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-100", attention: stats.pending > 0 },
+    { label: "Quotations Sent", value: stats.confirmed, icon: CheckCircle2, color: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-100" },
+    { label: "Completed", value: stats.completed, icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50", border: "border-green-100" },
   ];
 
   return (
@@ -96,7 +92,7 @@ export default function AdminDashboard() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
-          <p className="text-slate-500 text-sm mt-1">Overview of your store</p>
+          <p className="text-slate-500 text-sm mt-1">Overview of your enquiries</p>
         </div>
 
         {/* Stats */}
@@ -124,34 +120,34 @@ export default function AdminDashboard() {
         {/* Quick Actions */}
         <div className="flex gap-3">
           <Button asChild size="sm">
-            <Link to="/admin/orders">View All Orders <ArrowRight className="ml-1 h-4 w-4" /></Link>
+            <Link to="/admin/orders">View All Enquiries <ArrowRight className="ml-1 h-4 w-4" /></Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
             <Link to="/admin/products">Manage Products</Link>
           </Button>
         </div>
 
-        {/* Recent Orders */}
+        {/* Recent Enquiries */}
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-            <h2 className="font-semibold text-slate-800">Recent Orders</h2>
+            <h2 className="font-semibold text-slate-800">Recent Enquiries</h2>
             <Link to="/admin/orders" className="text-sm text-primary hover:underline">View all</Link>
           </div>
 
           {recentOrders.length === 0 ? (
             <div className="py-16 text-center">
               <Package className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-500">No orders yet. Share your store to get started!</p>
+              <p className="text-slate-500">No enquiries yet.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="text-left px-6 py-3 text-slate-600 font-medium">Order ID</th>
+                    <th className="text-left px-6 py-3 text-slate-600 font-medium">Enquiry ID</th>
                     <th className="text-left px-6 py-3 text-slate-600 font-medium">Customer</th>
                     <th className="text-left px-6 py-3 text-slate-600 font-medium hidden md:table-cell">Date</th>
-                    <th className="text-left px-6 py-3 text-slate-600 font-medium hidden sm:table-cell">Total</th>
+                    <th className="text-left px-6 py-3 text-slate-600 font-medium hidden sm:table-cell">Items Count</th>
                     <th className="text-left px-6 py-3 text-slate-600 font-medium">Status</th>
                   </tr>
                 </thead>
@@ -166,7 +162,9 @@ export default function AdminDashboard() {
                       <td className="px-6 py-3 text-slate-500 hidden md:table-cell">
                         {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                       </td>
-                      <td className="px-6 py-3 font-semibold text-slate-800 hidden sm:table-cell">{formatPrice(order.total)}</td>
+                      <td className="px-6 py-3 font-semibold text-slate-800 hidden sm:table-cell">
+                        {order.items.reduce((sum, item) => sum + item.quantity, 0)} items
+                      </td>
                       <td className="px-6 py-3">
                         <Badge className={`${STATUS_COLORS[order.status]} text-xs`}>
                           {STATUS_LABELS[order.status]}

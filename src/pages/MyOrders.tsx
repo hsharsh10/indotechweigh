@@ -117,7 +117,6 @@ function OrderCard({ order }: { order: Order }) {
                     <span className="text-foreground">{item.name}</span>
                     {item.variant && <span className="text-muted-foreground"> · {item.variant}</span>}
                   </div>
-                  <Badge variant="secondary">Qty: {item.quantity}</Badge>
                 </div>
               ))}
             </div>

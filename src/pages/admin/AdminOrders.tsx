@@ -228,7 +228,6 @@ export default function AdminOrders() {
                                 <span className="text-slate-800 font-medium">{item.name}</span>
                                 {item.variant && <span className="text-slate-500"> · {item.variant}</span>}
                               </div>
-                              <span className="font-semibold text-slate-800">Qty: {item.quantity}</span>
                             </div>
                           ))}
                         </div>

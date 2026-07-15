@@ -136,7 +136,6 @@ export default function OrderConfirmation() {
                   <p className="font-medium text-foreground">{item.name}</p>
                   {item.variant && <p className="text-sm text-muted-foreground">{item.variant}</p>}
                 </div>
-                <Badge variant="secondary" className="font-semibold text-sm">Qty: {item.quantity}</Badge>
               </div>
             ))}
           </div>

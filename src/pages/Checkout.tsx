@@ -347,9 +347,6 @@ export default function Checkout() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
                         {item.variant && <p className="text-xs text-muted-foreground">{item.variant}</p>}
-                        <div className="flex justify-between mt-0.5">
-                          <span className="text-xs font-semibold text-foreground bg-slate-100 px-2 py-0.5 rounded border">Qty: {item.quantity}</span>
-                        </div>
                       </div>
                     </div>
                   ))}

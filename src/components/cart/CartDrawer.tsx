@@ -94,33 +94,14 @@ export function CartDrawer() {
                       </div>
                     )}
 
-                    {/* Quantity & Remove */}
-                    <div className="flex items-center justify-between mt-2">
-                      <div className="flex items-center border border-border rounded-md overflow-hidden">
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="h-6 w-6 flex items-center justify-center hover:bg-muted transition-colors text-foreground"
-                          aria-label="Decrease quantity"
-                        >
-                          <Minus className="h-3 w-3" />
-                        </button>
-                        <span className="h-6 w-8 flex items-center justify-center text-xs font-medium border-x border-border text-foreground">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="h-6 w-6 flex items-center justify-center hover:bg-muted transition-colors text-foreground"
-                          aria-label="Increase quantity"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </button>
-                      </div>
+                    {/* Remove button */}
+                    <div className="flex items-center justify-end mt-2">
                       <button
                         onClick={() => removeFromCart(item.id)}
-                        className="h-6 w-6 flex items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive transition-colors text-muted-foreground"
+                        className="text-xs flex items-center gap-1 text-muted-foreground hover:text-destructive transition-colors"
                         aria-label="Remove item"
                       >
-                        <X className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3 w-3" /> Remove
                       </button>
                     </div>
                   </div>

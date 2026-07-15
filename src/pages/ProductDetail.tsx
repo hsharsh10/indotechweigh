@@ -135,9 +135,7 @@ export default function ProductDetail() {
       image: displayImgSrc || "/placeholder.svg",
       type: "product",
     });
-    toast.success(`${product.name} added to enquiry list!`, {
-      description: `Quantity: ${quantity}`,
-    });
+    toast.success(`${product.name} added to enquiry list!`);
     setTimeout(() => setAdding(false), 800);
   };
 
@@ -237,33 +235,9 @@ export default function ProductDetail() {
                 )}
               </div>
 
-              {/* Quantity + Add to Enquiry Actions */}
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center gap-4">
-                  <span className="text-sm font-medium text-foreground">Quantity:</span>
-                  <div className="flex items-center border border-border rounded-lg bg-card">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-9 w-9"
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      disabled={quantity <= 1}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-10 text-center font-semibold text-sm">{quantity}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-9 w-9"
-                      onClick={() => setQuantity(quantity + 1)}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 pt-2">
+              {/* Add to Enquiry Actions */}
+              <div className="space-y-4 mb-8 pt-2">
+                <div className="flex flex-col sm:flex-row gap-4">
                   <Button
                     size="lg"
                     className="flex-1 text-base py-6"

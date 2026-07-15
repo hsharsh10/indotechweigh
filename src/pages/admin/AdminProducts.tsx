@@ -105,7 +105,6 @@ export default function AdminProducts() {
                   <tr className="bg-slate-50 border-b border-slate-100">
                     <th className="text-left px-5 py-3 text-slate-600 font-medium">Name</th>
                     <th className="text-left px-5 py-3 text-slate-600 font-medium hidden sm:table-cell">Category/Type</th>
-                    <th className="text-left px-5 py-3 text-slate-600 font-medium">Price</th>
                     <th className="text-left px-5 py-3 text-slate-600 font-medium">Stock</th>
                     <th className="text-right px-5 py-3 text-slate-600 font-medium">Actions</th>
                   </tr>
@@ -118,15 +117,6 @@ export default function AdminProducts() {
                         <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{p.shortDescription}</p>
                       </td>
                       <td className="px-5 py-3 text-slate-600 hidden sm:table-cell">{p.category}</td>
-                      <td className="px-5 py-3">
-                        {p.price ? (
-                          <div>
-                            <p className="font-semibold text-slate-800">{formatPrice(p.price)}</p>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400 italic text-xs">Quote only</span>
-                        )}
-                      </td>
                       <td className="px-5 py-3">
                         <StockBadge status={p.stockStatus} />
                       </td>
@@ -151,9 +141,6 @@ export default function AdminProducts() {
                         <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{p.description}</p>
                       </td>
                       <td className="px-5 py-3 text-slate-600 hidden sm:table-cell">—</td>
-                      <td className="px-5 py-3">
-                        <p className="font-semibold text-slate-800">{formatPrice(p.price)}</p>
-                      </td>
                       <td className="px-5 py-3">
                         <StockBadge status={p.stockStatus} />
                       </td>

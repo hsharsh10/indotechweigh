@@ -26,12 +26,14 @@ import {
   MapPin,
   CreditCard,
   Check,
+  Building,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useOrders, type PaymentMethod } from "@/context/OrderContext";
 import { formatPrice } from "@/data/products";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import qrCode from "@/assets/qr-code.png";
 
 const INDIAN_STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -43,7 +45,7 @@ const INDIAN_STATES = [
   "Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry",
 ];
 
-const UPI_ID = "indotech@upi";
+const UPI_ID = "indotechweigh@okhdfcbank";
 const COD_LIMIT = 10000;
 
 const steps = [
@@ -374,18 +376,92 @@ export default function Checkout() {
                         </div>
                       </div>
                       {paymentMethod === "upi" && (
-                        <div className="mt-4 p-4 rounded-lg bg-card border border-border animate-fade-in-up" onClick={e => e.stopPropagation()}>
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-xs text-muted-foreground">UPI ID</p>
-                              <p className="text-base font-bold text-primary">{UPI_ID}</p>
+                        <div className="mt-4 p-4 rounded-lg bg-card border border-border animate-fade-in-up space-y-4" onClick={e => e.stopPropagation()}>
+                          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                            {/* QR Code Container */}
+                            <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm max-w-[180px] flex-shrink-0 flex flex-col items-center mx-auto md:mx-0">
+                              <img src={qrCode} alt="GPay QR Code" className="w-full h-auto rounded" />
+                              <span className="text-[10px] text-slate-400 font-semibold mt-2">Scan with any UPI App</span>
                             </div>
-                            <Button variant="outline" size="sm" onClick={() => copyToClipboard(UPI_ID, "UPI ID")}>
-                              <Copy className="h-3.5 w-3.5 mr-1" /> Copy
-                            </Button>
+                            {/* Details Container */}
+                            <div className="flex-1 space-y-3 w-full">
+                              <div>
+                                <p className="text-xs text-muted-foreground">UPI ID</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <p className="text-sm md:text-base font-bold text-primary">{UPI_ID}</p>
+                                  <Button variant="outline" size="sm" className="h-7 px-2" onClick={() => copyToClipboard(UPI_ID, "UPI ID")}>
+                                    <Copy className="h-3.5 w-3.5 mr-1" /> Copy
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Payee Name</p>
+                                  <p className="font-semibold text-foreground">DEVENDER SHARMA</p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Business Name</p>
+                                  <p className="font-semibold text-foreground truncate">Indotech Electronic Weighing</p>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-3">
-                            After payment, upload the screenshot and enter the UTR number below.
+                          <p className="text-xs text-muted-foreground border-t border-border pt-3">
+                            After payment, upload the screenshot and enter the UTR/Transaction number below.
+                          </p>
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Bank Transfer */}
+                    <button onClick={() => setPaymentMethod("bank_transfer")}
+                      className={`w-full p-4 rounded-xl border-2 text-left transition-all ${paymentMethod === "bank_transfer" ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${paymentMethod === "bank_transfer" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                          <Building className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-foreground">Bank Transfer</p>
+                          <p className="text-xs text-muted-foreground">Pay via NEFT, RTGS, IMPS or net banking</p>
+                        </div>
+                      </div>
+                      {paymentMethod === "bank_transfer" && (
+                        <div className="mt-4 p-4 rounded-lg bg-card border border-border animate-fade-in-up space-y-3" onClick={e => e.stopPropagation()}>
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Bank Account Details</p>
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                              <p className="text-xs text-muted-foreground">Bank Name</p>
+                              <p className="font-semibold text-foreground">Kotak Mahindra Bank</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Branch</p>
+                              <p className="font-semibold text-foreground">Ashok Vihar</p>
+                            </div>
+                            <div className="col-span-2">
+                              <p className="text-xs text-muted-foreground">Account Name</p>
+                              <p className="font-semibold text-foreground">Indotech Electronic Weighing Systems</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Account Number</p>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <p className="font-bold text-primary">6411245870</p>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard("6411245870", "Account Number")}>
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">IFSC Code</p>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <p className="font-bold text-primary">KKBK0000215</p>
+                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard("KKBK0000215", "IFSC Code")}>
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground border-t border-border pt-3">
+                            After payment, upload the screenshot and enter the UTR/Reference number below.
                           </p>
                         </div>
                       )}
